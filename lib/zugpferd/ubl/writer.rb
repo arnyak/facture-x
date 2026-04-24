@@ -283,6 +283,13 @@ module Zugpferd
             end
           end
         end
+        # BT-111: second TaxTotal with tax currency amount (no subtotals)
+        if breakdown.tax_amount_in_accounting_currency
+          xml["cac"].TaxTotal do
+            xml["cbc"].TaxAmount(format_decimal(breakdown.tax_amount_in_accounting_currency),
+                                 currencyID: breakdown.tax_amount_in_accounting_currency_code)
+          end
+        end
       end
 
       def build_monetary_total(xml, totals, currency_code)

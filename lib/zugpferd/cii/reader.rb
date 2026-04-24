@@ -155,13 +155,21 @@ module Zugpferd
         return nil unless settlement_node
 
         totals_node = settlement_node.at_xpath(MONETARY_TOTAL, NS)
-        tax_total_node = totals_node&.at_xpath(TOTALS[:tax_total_amount], NS)
+        tax_total_nodes = totals_node&.xpath(TOTALS[:tax_total_amount], NS)
+        tax_total_node = tax_total_nodes&.first
         currency = tax_total_node&.[]("currencyID")
 
         breakdown = Model::TaxBreakdown.new(
           tax_amount: tax_total_node&.text,
           currency_code: currency,
         )
+
+        # BT-111: second TaxTotalAmount with tax currency
+        if tax_total_nodes && tax_total_nodes.length > 1
+          second = tax_total_nodes[1]
+          breakdown.tax_amount_in_accounting_currency = parse_decimal(second.text)
+          breakdown.tax_amount_in_accounting_currency_code = second["currencyID"]
+        end
 
         breakdown.subtotals = settlement_node.xpath(TAX_SUBTOTAL, NS).map do |sub|
           Model::TaxSubtotal.new(

@@ -50,7 +50,7 @@ module Zugpferd
           buyer: build_party(root.at_xpath(BUYER, @ns)),
           line_items: root.xpath(line_element, @ns).map { |n| build_line_item(n) },
           allowance_charges: root.xpath(ALLOWANCE_CHARGE, @ns).map { |n| build_allowance_charge(n) },
-          tax_breakdown: build_tax_breakdown(root.at_xpath(TAX_TOTAL, @ns)),
+          tax_breakdown: build_tax_breakdown(root),
           monetary_totals: build_monetary_totals(root.at_xpath(MONETARY_TOTAL, @ns)),
           payment_instructions: build_payment_instructions(root),
           invoice_period: build_invoice_period(root.at_xpath(INVOICE_PERIOD, @ns)),
@@ -77,17 +77,20 @@ module Zugpferd
       def build_party(node)
         return nil unless node
 
+        # Skip PartyIdentification with schemeID="SEPA" (that's BT-90 creditor reference, not BT-29)
+        id_node = node.xpath("cac:PartyIdentification/cbc:ID", @ns)
+          .reject { |n| n["schemeID"] == "SEPA" }.first
+
         party = Model::TradeParty.new(
           name: text(node, PARTY[:name]),
           trading_name: text(node, PARTY[:trading_name]),
-          identifier: text(node, PARTY[:identifier]),
+          identifier: id_node&.text,
           legal_registration_id: text(node, PARTY[:legal_registration_id]),
           legal_form: text(node, PARTY[:legal_form]),
           vat_identifier: text(node, PARTY[:vat_identifier]),
           electronic_address: text(node, PARTY[:electronic_address]),
         )
 
-        id_node = node.at_xpath(PARTY[:identifier], @ns)
         party.identifier_scheme = id_node["schemeID"] if id_node&.[]("schemeID")
 
         legal_id_node = node.at_xpath(PARTY[:legal_registration_id], @ns)
@@ -150,17 +153,28 @@ module Zugpferd
         )
       end
 
-      def build_tax_breakdown(node)
-        return nil unless node
+      def build_tax_breakdown(root)
+        tax_totals = root.xpath(TAX_TOTAL, @ns)
+        # Primary TaxTotal has subtotals; secondary (BT-111) has only TaxAmount
+        primary = tax_totals.find { |tt| !tt.xpath(TAX_SUBTOTAL, @ns).empty? }
+        primary ||= tax_totals.first
+        return nil unless primary
 
-        currency = node.at_xpath("cbc:TaxAmount/@currencyID", @ns)&.text
+        currency = primary.at_xpath("cbc:TaxAmount/@currencyID", @ns)&.text
 
         breakdown = Model::TaxBreakdown.new(
-          tax_amount: text(node, "cbc:TaxAmount"),
+          tax_amount: text(primary, "cbc:TaxAmount"),
           currency_code: currency,
         )
 
-        breakdown.subtotals = node.xpath(TAX_SUBTOTAL, @ns).map do |sub|
+        # BT-111: secondary TaxTotal without subtotals
+        secondary = tax_totals.find { |tt| tt != primary && tt.xpath(TAX_SUBTOTAL, @ns).empty? }
+        if secondary
+          breakdown.tax_amount_in_accounting_currency = parse_decimal(text(secondary, "cbc:TaxAmount"))
+          breakdown.tax_amount_in_accounting_currency_code = secondary.at_xpath("cbc:TaxAmount/@currencyID", @ns)&.text
+        end
+
+        breakdown.subtotals = primary.xpath(TAX_SUBTOTAL, @ns).map do |sub|
           sub_currency = sub.at_xpath("cbc:TaxableAmount/@currencyID", @ns)&.text
           Model::TaxSubtotal.new(
             taxable_amount: text(sub, TAX[:taxable_amount]),

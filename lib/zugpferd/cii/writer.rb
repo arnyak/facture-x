@@ -291,6 +291,10 @@ module Zugpferd
             xml["ram"].TaxTotalAmount(format_decimal(tax_breakdown.tax_amount),
                                       currencyID: tax_breakdown.currency_code)
           end
+          if tax_breakdown&.tax_amount_in_accounting_currency
+            xml["ram"].TaxTotalAmount(format_decimal(tax_breakdown.tax_amount_in_accounting_currency),
+                                      currencyID: tax_breakdown.tax_amount_in_accounting_currency_code)
+          end
           xml["ram"].GrandTotalAmount format_decimal(totals.tax_inclusive_amount)
           xml["ram"].RoundingAmount format_decimal(totals.payable_rounding_amount) if totals.payable_rounding_amount
           xml["ram"].TotalPrepaidAmount format_decimal(totals.prepaid_amount) if totals.prepaid_amount

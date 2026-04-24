@@ -7,7 +7,11 @@ module Zugpferd
       # @return [BigDecimal] BT-110 Invoice total VAT amount
       # @return [String] Tax currency code
       # @return [Array<TaxSubtotal>] Individual VAT category breakdowns
-      attr_accessor :tax_amount, :currency_code, :subtotals
+      # @return [BigDecimal, nil] BT-111 Invoice total VAT amount in accounting currency
+      # @return [String, nil] BT-111 currency code (same as BillingDocument#tax_currency_code)
+      attr_accessor :tax_amount, :currency_code, :subtotals,
+                    :tax_amount_in_accounting_currency,
+                    :tax_amount_in_accounting_currency_code
 
       # @param tax_amount [String, BigDecimal] BT-110 Total VAT amount
       # @param currency_code [String] Tax currency code
