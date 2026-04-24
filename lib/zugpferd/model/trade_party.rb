@@ -16,8 +16,11 @@ module Zugpferd
       # @return [String, nil] BT-34-1/BT-49-1 Electronic address scheme
       # @return [PostalAddress, nil] BG-5/BG-8 Postal address
       # @return [Contact, nil] BG-6/BG-9 Contact information
-      attr_accessor :name, :trading_name, :identifier,
-                    :legal_registration_id, :legal_form, :vat_identifier,
+      # @return [String, nil] BT-29-1/BT-46-1 Party identifier scheme
+      # @return [String, nil] BT-30-1/BT-47-1 Legal registration identifier scheme
+      attr_accessor :name, :trading_name, :identifier, :identifier_scheme,
+                    :legal_registration_id, :legal_registration_id_scheme,
+                    :legal_form, :vat_identifier,
                     :electronic_address, :electronic_address_scheme,
                     :postal_address, :contact
 

@@ -49,11 +49,47 @@ module Zugpferd
         end
         xml["cbc"].Note doc.note if doc.note
         xml["cbc"].DocumentCurrencyCode doc.currency_code
+        xml["cbc"].TaxCurrencyCode doc.tax_currency_code if doc.tax_currency_code
+        xml["cbc"].AccountingCost doc.buyer_accounting_reference if doc.buyer_accounting_reference
         xml["cbc"].BuyerReference doc.buyer_reference if doc.buyer_reference
+
+        build_invoice_period(xml, doc.invoice_period) if doc.invoice_period
+
+        if doc.purchase_order_reference || doc.sales_order_reference
+          xml["cac"].OrderReference do
+            xml["cbc"].ID doc.purchase_order_reference if doc.purchase_order_reference
+            xml["cbc"].SalesOrderID doc.sales_order_reference if doc.sales_order_reference
+          end
+        end
+
+        doc.preceding_invoice_references.each do |ref|
+          xml["cac"].BillingReference do
+            xml["cac"].InvoiceDocumentReference do
+              xml["cbc"].ID ref.id
+              xml["cbc"].IssueDate ref.issue_date.to_s if ref.issue_date
+            end
+          end
+        end
+
+        if doc.contract_reference
+          xml["cac"].ContractDocumentReference do
+            xml["cbc"].ID doc.contract_reference
+          end
+        end
+
+        doc.additional_documents.each { |ref| build_additional_document_reference(xml, ref) }
+
+        if doc.project_reference
+          xml["cac"].ProjectReference do
+            xml["cbc"].ID doc.project_reference
+          end
+        end
 
         build_supplier(xml, doc.seller, doc.payment_instructions) if doc.seller
         build_customer(xml, doc.buyer) if doc.buyer
-        build_delivery(xml, doc) if doc.delivery_date
+        build_payee_party(xml, doc.payee) if doc.payee
+        build_tax_representative_party(xml, doc.seller_tax_representative) if doc.seller_tax_representative
+        build_delivery(xml, doc) if doc.delivery_date || doc.deliver_to_name || doc.deliver_to_identifier || doc.deliver_to_address
         build_payment_means(xml, doc.payment_instructions) if doc.payment_instructions
         build_payment_terms(xml, doc.payment_instructions) if doc.payment_instructions&.note
         doc.allowance_charges.each { |ac| build_allowance_charge(xml, ac, doc.currency_code) }
@@ -85,7 +121,9 @@ module Zugpferd
 
           if party.identifier
             xml["cac"].PartyIdentification do
-              xml["cbc"].ID party.identifier
+              id_attrs = {}
+              id_attrs[:schemeID] = party.identifier_scheme if party.identifier_scheme
+              xml["cbc"].ID(party.identifier, id_attrs)
             end
           end
 
@@ -114,7 +152,11 @@ module Zugpferd
 
           xml["cac"].PartyLegalEntity do
             xml["cbc"].RegistrationName party.name
-            xml["cbc"].CompanyID party.legal_registration_id if party.legal_registration_id
+            if party.legal_registration_id
+              lid_attrs = {}
+              lid_attrs[:schemeID] = party.legal_registration_id_scheme if party.legal_registration_id_scheme
+              xml["cbc"].CompanyID(party.legal_registration_id, lid_attrs)
+            end
             xml["cbc"].CompanyLegalForm party.legal_form if party.legal_form
           end
 
@@ -125,8 +167,15 @@ module Zugpferd
       def build_postal_address(xml, addr)
         xml["cac"].PostalAddress do
           xml["cbc"].StreetName addr.street_name if addr.street_name
+          xml["cbc"].AdditionalStreetName addr.additional_street_name if addr.additional_street_name
           xml["cbc"].CityName addr.city_name if addr.city_name
           xml["cbc"].PostalZone addr.postal_zone if addr.postal_zone
+          xml["cbc"].CountrySubentity addr.country_subdivision if addr.country_subdivision
+          if addr.address_line_3
+            xml["cac"].AddressLine do
+              xml["cbc"].Line addr.address_line_3
+            end
+          end
           xml["cac"].Country do
             xml["cbc"].IdentificationCode addr.country_code
           end
@@ -143,7 +192,31 @@ module Zugpferd
 
       def build_delivery(xml, doc)
         xml["cac"].Delivery do
-          xml["cbc"].ActualDeliveryDate doc.delivery_date.to_s
+          xml["cbc"].ActualDeliveryDate doc.delivery_date.to_s if doc.delivery_date
+          if doc.deliver_to_identifier || doc.deliver_to_address
+            xml["cac"].DeliveryLocation do
+              xml["cbc"].ID doc.deliver_to_identifier if doc.deliver_to_identifier
+              if doc.deliver_to_address
+                xml["cac"].Address do
+                  xml["cbc"].StreetName doc.deliver_to_address.street_name if doc.deliver_to_address.street_name
+                  xml["cbc"].AdditionalStreetName doc.deliver_to_address.additional_street_name if doc.deliver_to_address.additional_street_name
+                  xml["cbc"].CityName doc.deliver_to_address.city_name if doc.deliver_to_address.city_name
+                  xml["cbc"].PostalZone doc.deliver_to_address.postal_zone if doc.deliver_to_address.postal_zone
+                  xml["cbc"].CountrySubentity doc.deliver_to_address.country_subdivision if doc.deliver_to_address.country_subdivision
+                  xml["cac"].Country do
+                    xml["cbc"].IdentificationCode doc.deliver_to_address.country_code
+                  end
+                end
+              end
+            end
+          end
+          if doc.deliver_to_name
+            xml["cac"].DeliveryParty do
+              xml["cac"].PartyName do
+                xml["cbc"].Name doc.deliver_to_name
+              end
+            end
+          end
         end
       end
 
@@ -158,9 +231,15 @@ module Zugpferd
               xml["cbc"].HolderName payment.card_holder_name if payment.card_holder_name
             end
           end
-          if payment.account_id
+          if payment.account_id || payment.account_name || payment.payment_service_provider_id
             xml["cac"].PayeeFinancialAccount do
-              xml["cbc"].ID payment.account_id
+              xml["cbc"].ID payment.account_id if payment.account_id
+              xml["cbc"].Name payment.account_name if payment.account_name
+              if payment.payment_service_provider_id
+                xml["cac"].FinancialInstitutionBranch do
+                  xml["cbc"].ID payment.payment_service_provider_id
+                end
+              end
             end
           end
           if payment.mandate_reference
@@ -266,6 +345,21 @@ module Zugpferd
                           unitCode: line.unit_code)
           xml["cbc"].LineExtensionAmount(format_decimal(line.line_extension_amount),
                                          currencyID: currency_code)
+          build_invoice_period(xml, line.invoice_period) if line.invoice_period
+          if line.order_line_reference
+            xml["cac"].OrderLineReference do
+              xml["cbc"].LineID line.order_line_reference
+            end
+          end
+          if line.object_identifier
+            xml["cac"].DocumentReference do
+              attrs = {}
+              attrs[:schemeID] = line.object_identifier_scheme if line.object_identifier_scheme
+              xml["cbc"].ID(line.object_identifier, attrs)
+              xml["cbc"].DocumentTypeCode "130"
+            end
+          end
+          line.allowance_charges.each { |ac| build_allowance_charge(xml, ac, currency_code) }
           build_item(xml, line.item) if line.item
           build_price(xml, line.price, currency_code) if line.price
         end
@@ -275,9 +369,33 @@ module Zugpferd
         xml["cac"].Item do
           xml["cbc"].Description item.description if item.description
           xml["cbc"].Name item.name
+          if item.buyers_identifier
+            xml["cac"].BuyersItemIdentification do
+              xml["cbc"].ID item.buyers_identifier
+            end
+          end
           if item.sellers_identifier
             xml["cac"].SellersItemIdentification do
               xml["cbc"].ID item.sellers_identifier
+            end
+          end
+          if item.standard_identifier
+            xml["cac"].StandardItemIdentification do
+              attrs = {}
+              attrs[:schemeID] = item.standard_identifier_scheme if item.standard_identifier_scheme
+              xml["cbc"].ID(item.standard_identifier, attrs)
+            end
+          end
+          if item.country_of_origin
+            xml["cac"].OriginCountry do
+              xml["cbc"].IdentificationCode item.country_of_origin
+            end
+          end
+          item.classification_codes.each do |cc|
+            xml["cac"].CommodityClassification do
+              attrs = {}
+              attrs[:listID] = cc[:list_id] if cc[:list_id]
+              xml["cbc"].ItemClassificationCode(cc[:id], attrs)
             end
           end
           if item.tax_category
@@ -295,6 +413,73 @@ module Zugpferd
       def build_price(xml, price, currency_code)
         xml["cac"].Price do
           xml["cbc"].PriceAmount(format_decimal(price.amount), currencyID: currency_code)
+        end
+      end
+
+      def build_payee_party(xml, party)
+        xml["cac"].PayeeParty do
+          if party.identifier
+            xml["cac"].PartyIdentification do
+              id_attrs = {}
+              id_attrs[:schemeID] = party.identifier_scheme if party.identifier_scheme
+              xml["cbc"].ID(party.identifier, id_attrs)
+            end
+          end
+          if party.trading_name
+            xml["cac"].PartyName do
+              xml["cbc"].Name party.trading_name
+            end
+          end
+          xml["cac"].PartyLegalEntity do
+            xml["cbc"].RegistrationName party.name
+            xml["cbc"].CompanyID party.legal_registration_id if party.legal_registration_id
+          end
+        end
+      end
+
+      def build_tax_representative_party(xml, party)
+        xml["cac"].TaxRepresentativeParty do
+          xml["cac"].PartyName do
+            xml["cbc"].Name party.name
+          end
+          if party.vat_identifier
+            xml["cac"].PartyTaxScheme do
+              xml["cbc"].CompanyID party.vat_identifier
+              xml["cac"].TaxScheme do
+                xml["cbc"].ID "VAT"
+              end
+            end
+          end
+          build_postal_address(xml, party.postal_address) if party.postal_address
+        end
+      end
+
+      def build_additional_document_reference(xml, ref)
+        xml["cac"].AdditionalDocumentReference do
+          xml["cbc"].ID ref.id
+          xml["cbc"].DocumentDescription ref.description if ref.description
+          if ref.attached_document || ref.uri
+            xml["cac"].Attachment do
+              if ref.attached_document
+                attrs = {}
+                attrs[:mimeCode] = ref.mime_code if ref.mime_code
+                attrs[:filename] = ref.filename if ref.filename
+                xml["cbc"].EmbeddedDocumentBinaryObject(ref.attached_document, attrs)
+              end
+              if ref.uri
+                xml["cac"].ExternalReference do
+                  xml["cbc"].URI ref.uri
+                end
+              end
+            end
+          end
+        end
+      end
+
+      def build_invoice_period(xml, period)
+        xml["cac"].InvoicePeriod do
+          xml["cbc"].StartDate period.start_date.to_s if period.start_date
+          xml["cbc"].EndDate period.end_date.to_s if period.end_date
         end
       end
 

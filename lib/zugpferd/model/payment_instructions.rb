@@ -13,10 +13,13 @@ module Zugpferd
       # @return [String, nil] BT-89 Mandate reference identifier
       # @return [String, nil] BT-90 Bank assigned creditor identifier
       # @return [String, nil] BT-91 Debited account identifier
+      # @return [String, nil] BT-85 Payment account name
+      # @return [String, nil] BT-86 Payment service provider identifier (BIC/SWIFT)
       attr_accessor :payment_means_code, :payment_id, :account_id, :note,
                     :card_account_id, :card_holder_name, :card_network_id,
                     :mandate_reference, :creditor_reference_id,
-                    :debited_account_id
+                    :debited_account_id, :account_name,
+                    :payment_service_provider_id
 
       # @param payment_means_code [String] BT-81 Payment means type code
       # @param rest [Hash] additional attributes set via accessors

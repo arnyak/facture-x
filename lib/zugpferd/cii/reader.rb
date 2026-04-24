@@ -36,6 +36,7 @@ module Zugpferd
       def build_invoice(root)
         settlement = root.at_xpath(SETTLEMENT, NS)
         delivery = root.at_xpath(DELIVERY, NS)
+        ship_to = delivery&.at_xpath(SHIP_TO, NS)
         type_code = text(root, INVOICE[:type_code])
         model_class = TYPE_CODE_MAP.fetch(type_code, Model::Invoice)
 
@@ -57,6 +58,24 @@ module Zugpferd
           tax_breakdown: build_tax_breakdown(settlement),
           monetary_totals: build_monetary_totals(settlement&.at_xpath(MONETARY_TOTAL, NS)),
           payment_instructions: build_payment_instructions(settlement),
+          invoice_period: build_invoice_period(settlement&.at_xpath(BILLING_PERIOD, NS)),
+          # Document references
+          purchase_order_reference: text(root, PURCHASE_ORDER_REF),
+          contract_reference: text(root, CONTRACT_REF),
+          project_reference: text(root, PROJECT_REF),
+          sales_order_reference: text(root, SALES_ORDER_REF),
+          preceding_invoice_references: settlement ? build_preceding_invoices(settlement) : [],
+          additional_documents: build_additional_documents(root),
+          # Additional parties
+          payee: settlement ? build_party(settlement.at_xpath(PAYEE, NS)) : nil,
+          seller_tax_representative: build_party(root.at_xpath(TAX_REPRESENTATIVE, NS)),
+          # Deliver-to
+          deliver_to_name: ship_to ? text(ship_to, SHIP_TO_NAME) : nil,
+          deliver_to_identifier: ship_to ? text(ship_to, SHIP_TO_ID) : nil,
+          deliver_to_address: ship_to ? build_postal_address_if_present(ship_to) : nil,
+          # Document-level fields
+          tax_currency_code: settlement ? text(settlement, TAX_CURRENCY_CODE) : nil,
+          buyer_accounting_reference: settlement ? text(settlement, BUYER_ACCOUNTING_REF) : nil,
         )
       end
 
@@ -72,6 +91,12 @@ module Zugpferd
           vat_identifier: text(node, PARTY[:vat_identifier]),
           electronic_address: text(node, PARTY[:electronic_address]),
         )
+
+        id_node = node.at_xpath(PARTY[:identifier], NS)
+        party.identifier_scheme = id_node["schemeID"] if id_node&.[]("schemeID")
+
+        legal_id_node = node.at_xpath(PARTY[:legal_registration_id], NS)
+        party.legal_registration_id_scheme = legal_id_node["schemeID"] if legal_id_node&.[]("schemeID")
 
         endpoint = node.at_xpath(PARTY[:electronic_address], NS)
         party.electronic_address_scheme = endpoint["schemeID"] if endpoint
@@ -89,8 +114,11 @@ module Zugpferd
         Model::PostalAddress.new(
           country_code: text(node, ADDRESS[:country_code]),
           street_name: text(node, ADDRESS[:street_name]),
+          additional_street_name: text(node, ADDRESS[:additional_street_name]),
+          address_line_3: text(node, ADDRESS[:address_line_3]),
           city_name: text(node, ADDRESS[:city_name]),
           postal_zone: text(node, ADDRESS[:postal_zone]),
+          country_subdivision: text(node, ADDRESS[:country_subdivision]),
         )
       end
 
@@ -112,6 +140,8 @@ module Zugpferd
           payment_means_code: text(means_node, PAYMENT[:payment_means_code]),
           payment_id: text(settlement_node, PAYMENT_REFERENCE),
           account_id: text(means_node, PAYMENT[:account_id]),
+          account_name: text(means_node, PAYMENT[:account_name]),
+          payment_service_provider_id: text(means_node, PAYMENT[:payment_service_provider_id]),
           card_account_id: text(means_node, PAYMENT[:card_account_id]),
           card_holder_name: text(means_node, PAYMENT[:card_holder_name]),
           debited_account_id: text(means_node, PAYMENT[:debited_account_id]),
@@ -167,6 +197,7 @@ module Zugpferd
         item_node = node.at_xpath(ITEM, NS)
         price_node = node.at_xpath(PRICE, NS)
         tax_node = node.at_xpath(ITEM_TAX, NS)
+        obj_ref = node.at_xpath(LINE_OBJECT_ID, NS)
 
         Model::LineItem.new(
           id: text(node, LINE[:id]),
@@ -176,16 +207,46 @@ module Zugpferd
           note: text(node, LINE[:note]),
           item: build_item(item_node, tax_node),
           price: build_price(price_node),
+          invoice_period: build_invoice_period(node.at_xpath(LINE_BILLING_PERIOD, NS)),
+          allowance_charges: build_line_allowance_charges(node),
+          object_identifier: obj_ref ? text(obj_ref, LINE_OBJECT_ID_VALUE) : nil,
+          object_identifier_scheme: obj_ref ? text(obj_ref, LINE_OBJECT_ID_SCHEME) : nil,
+          order_line_reference: text(node, LINE_ORDER_REF),
         )
+      end
+
+      def build_line_allowance_charges(node)
+        node.xpath(LINE_ALLOWANCE_CHARGE, NS).map do |ac_node|
+          Model::AllowanceCharge.new(
+            charge_indicator: text(ac_node, ALLOWANCE_CHARGE_FIELDS[:charge_indicator]) == "true",
+            reason: text(ac_node, ALLOWANCE_CHARGE_FIELDS[:reason]),
+            reason_code: text(ac_node, ALLOWANCE_CHARGE_FIELDS[:reason_code]),
+            amount: text(ac_node, ALLOWANCE_CHARGE_FIELDS[:amount]),
+            base_amount: parse_decimal(text(ac_node, ALLOWANCE_CHARGE_FIELDS[:base_amount])),
+            multiplier_factor: parse_decimal(text(ac_node, ALLOWANCE_CHARGE_FIELDS[:multiplier_factor])),
+            tax_category_code: text(ac_node, ALLOWANCE_CHARGE_FIELDS[:tax_category_code]),
+            tax_percent: parse_decimal(text(ac_node, ALLOWANCE_CHARGE_FIELDS[:tax_percent])),
+          )
+        end
       end
 
       def build_item(node, tax_node)
         return nil unless node
 
+        global_id_node = node.at_xpath(ITEM_GLOBAL_ID, NS)
+        classification_nodes = node.xpath(ITEM_CLASSIFICATION, NS)
+
         Model::Item.new(
           name: text(node, ITEM_FIELDS[:name]),
           description: text(node, ITEM_FIELDS[:description]),
           sellers_identifier: text(node, ITEM_FIELDS[:sellers_identifier]),
+          buyers_identifier: text(node, ITEM_BUYERS_ID),
+          standard_identifier: global_id_node&.text,
+          standard_identifier_scheme: global_id_node&.[]("schemeID"),
+          country_of_origin: text(node, ITEM_ORIGIN_COUNTRY),
+          classification_codes: classification_nodes.map do |cc|
+            { id: cc.text, list_id: cc["listID"] }
+          end,
           tax_category: tax_node ? text(tax_node, ITEM_TAX_FIELDS[:tax_category]) : nil,
           tax_percent: tax_node ? parse_decimal(text(tax_node, ITEM_TAX_FIELDS[:tax_percent])) : nil,
         )
@@ -212,6 +273,42 @@ module Zugpferd
             tax_percent: parse_decimal(text(node, ALLOWANCE_CHARGE_FIELDS[:tax_percent])),
           )
         end
+      end
+
+      def build_preceding_invoices(settlement_node)
+        settlement_node.xpath(PRECEDING_INVOICE, NS).map do |node|
+          Model::DocumentReference.new(
+            id: text(node, PRECEDING_INVOICE_ID),
+            issue_date: parse_cii_date(text(node, PRECEDING_INVOICE_DATE)),
+          )
+        end
+      end
+
+      def build_additional_documents(root)
+        root.xpath(ADDITIONAL_DOC, NS).map do |node|
+          attachment_node = node.at_xpath(ADDITIONAL_DOC_ATTACHMENT, NS)
+          Model::DocumentReference.new(
+            id: text(node, ADDITIONAL_DOC_ID),
+            description: text(node, ADDITIONAL_DOC_DESC),
+            uri: text(node, ADDITIONAL_DOC_URI),
+            attached_document: attachment_node&.text,
+            mime_code: attachment_node&.[]("mimeCode"),
+            filename: attachment_node&.[]("filename"),
+          )
+        end
+      end
+
+      def build_postal_address_if_present(node)
+        addr_node = node.at_xpath(POSTAL_ADDRESS, NS)
+        build_postal_address(addr_node) if addr_node
+      end
+
+      def build_invoice_period(node)
+        return nil unless node
+        Model::InvoicePeriod.new(
+          start_date: parse_cii_date(text(node, PERIOD_START)),
+          end_date: parse_cii_date(text(node, PERIOD_END)),
+        )
       end
 
       def text(node, xpath)

@@ -55,10 +55,13 @@ module Zugpferd
       # PostalAddress (BG-5 / BG-8)
       POSTAL_ADDRESS = "ram:PostalTradeAddress"
       ADDRESS = {
-        street_name:  "ram:LineOne",
-        city_name:    "ram:CityName",
-        postal_zone:  "ram:PostcodeCode",
-        country_code: "ram:CountryID",
+        street_name:            "ram:LineOne",
+        additional_street_name: "ram:LineTwo",
+        address_line_3:         "ram:LineThree",
+        city_name:              "ram:CityName",
+        postal_zone:            "ram:PostcodeCode",
+        country_code:           "ram:CountryID",
+        country_subdivision:    "ram:CountrySubDivisionName",
       }.freeze
 
       # Contact (BG-6 / BG-9)
@@ -72,17 +75,52 @@ module Zugpferd
       # PaymentMeans (BG-16)
       PAYMENT_MEANS = "ram:SpecifiedTradeSettlementPaymentMeans"
       PAYMENT = {
-        payment_means_code: "ram:TypeCode",
-        account_id:         "ram:PayeePartyCreditorFinancialAccount/ram:IBANID",
-        card_account_id:    "ram:ApplicableTradeSettlementFinancialCard/ram:ID",
-        card_holder_name:   "ram:ApplicableTradeSettlementFinancialCard/ram:CardholderName",
-        debited_account_id: "ram:PayerPartyDebtorFinancialAccount/ram:IBANID",
+        payment_means_code:          "ram:TypeCode",
+        account_id:                  "ram:PayeePartyCreditorFinancialAccount/ram:IBANID",
+        account_name:                "ram:PayeePartyCreditorFinancialAccount/ram:AccountName",
+        payment_service_provider_id: "ram:PayeeSpecifiedCreditorFinancialInstitution/ram:BICID",
+        card_account_id:             "ram:ApplicableTradeSettlementFinancialCard/ram:ID",
+        card_holder_name:            "ram:ApplicableTradeSettlementFinancialCard/ram:CardholderName",
+        debited_account_id:          "ram:PayerPartyDebtorFinancialAccount/ram:IBANID",
       }.freeze
       CREDITOR_REFERENCE_ID = "ram:CreditorReferenceID"
       PAYMENT_REFERENCE = "ram:PaymentReference"
       PAYMENT_TERMS_NOTE = "ram:SpecifiedTradePaymentTerms/ram:Description"
       PAYMENT_TERMS_DUE_DATE = "ram:SpecifiedTradePaymentTerms/ram:DueDateDateTime/udt:DateTimeString"
       PAYMENT_TERMS_MANDATE = "ram:SpecifiedTradePaymentTerms/ram:DirectDebitMandateID"
+
+      # Invoice period (BG-14 / BG-26)
+      BILLING_PERIOD = "ram:BillingSpecifiedPeriod"
+      PERIOD_START = "ram:StartDateTime/udt:DateTimeString"
+      PERIOD_END = "ram:EndDateTime/udt:DateTimeString"
+      LINE_BILLING_PERIOD = "ram:SpecifiedLineTradeSettlement/ram:BillingSpecifiedPeriod"
+
+      # Document references (BG-3, BT-11 to BT-14, BG-24)
+      PURCHASE_ORDER_REF = "#{AGREEMENT}/ram:BuyerOrderReferencedDocument/ram:IssuerAssignedID"
+      CONTRACT_REF = "#{AGREEMENT}/ram:ContractReferencedDocument/ram:IssuerAssignedID"
+      PROJECT_REF = "#{AGREEMENT}/ram:SpecifiedProcuringProject/ram:ID"
+      SALES_ORDER_REF = "#{AGREEMENT}/ram:SellerOrderReferencedDocument/ram:IssuerAssignedID"
+      PRECEDING_INVOICE = "ram:InvoiceReferencedDocument"
+      PRECEDING_INVOICE_ID = "ram:IssuerAssignedID"
+      PRECEDING_INVOICE_DATE = "ram:FormattedIssueDateTime/qdt:DateTimeString"
+      ADDITIONAL_DOC = "#{AGREEMENT}/ram:AdditionalReferencedDocument"
+      ADDITIONAL_DOC_ID = "ram:IssuerAssignedID"
+      ADDITIONAL_DOC_DESC = "ram:Name"
+      ADDITIONAL_DOC_URI = "ram:URIID"
+      ADDITIONAL_DOC_ATTACHMENT = "ram:AttachmentBinaryObject"
+
+      # Payee (BG-10) and Seller Tax Representative (BG-11)
+      PAYEE = "ram:PayeeTradeParty"
+      TAX_REPRESENTATIVE = "#{AGREEMENT}/ram:SellerTaxRepresentativeTradeParty"
+
+      # Deliver to (BG-13 / BG-15)
+      SHIP_TO = "ram:ShipToTradeParty"
+      SHIP_TO_NAME = "ram:Name"
+      SHIP_TO_ID = "ram:ID"
+
+      # Additional document-level fields
+      TAX_CURRENCY_CODE = "ram:TaxCurrencyCode"
+      BUYER_ACCOUNTING_REF = "ram:ReceivableSpecifiedTradeAccountingAccount/ram:ID"
 
       # TaxTotal (BG-23)
       TAX_SUBTOTAL = "ram:ApplicableTradeTax"
@@ -146,6 +184,23 @@ module Zugpferd
         tax_category: "ram:CategoryCode",
         tax_percent:  "ram:RateApplicablePercent",
       }.freeze
+
+      # Line-level allowances/charges (BG-27/BG-28)
+      LINE_ALLOWANCE_CHARGE = "ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge"
+
+      # Line object identifier (BT-128)
+      LINE_OBJECT_ID = "ram:SpecifiedLineTradeSettlement/ram:AdditionalReferencedDocument"
+      LINE_OBJECT_ID_VALUE = "ram:IssuerAssignedID"
+      LINE_OBJECT_ID_SCHEME = "ram:ReferenceTypeCode"
+
+      # Line order reference (BT-132)
+      LINE_ORDER_REF = "ram:SpecifiedLineTradeAgreement/ram:BuyerOrderReferencedDocument/ram:LineID"
+
+      # Item additional fields
+      ITEM_BUYERS_ID = "ram:BuyerAssignedID"
+      ITEM_GLOBAL_ID = "ram:GlobalID"
+      ITEM_CLASSIFICATION = "ram:DesignatedProductClassification/ram:ClassCode"
+      ITEM_ORIGIN_COUNTRY = "ram:OriginTradeCountry/ram:ID"
 
       # Price (BG-29)
       PRICE = "ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice"
