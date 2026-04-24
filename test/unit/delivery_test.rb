@@ -8,7 +8,7 @@ class DeliveryEnhancedTest < Minitest::Test
     @inv = build_invoice(
       deliver_to_name: "Warehouse Paris",
       deliver_to_identifier: "LOC-001",
-      deliver_to_address: Zugpferd::Model::PostalAddress.new(
+      deliver_to_address: FactureX::Model::PostalAddress.new(
         country_code: "FR",
         street_name: "10 rue de la Paix",
         city_name: "Paris",

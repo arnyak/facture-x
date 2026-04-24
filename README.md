@@ -1,4 +1,4 @@
-# Zugpferd
+# FactureX
 
 A Ruby library for reading and writing **XRechnung**, **ZUGFeRD** and **Factur-X** electronic invoices according to **EN 16931**, supporting both **UBL 2.1** and **UN/CEFACT CII** syntaxes.
 
@@ -36,7 +36,7 @@ Built for Ruby developers integrating e-invoicing into their applications, with 
 
 ```ruby
 # Gemfile
-gem "zugpferd"
+gem "facture_x"
 ```
 
 ```bash
@@ -46,7 +46,7 @@ bundle install
 Or install directly:
 
 ```bash
-gem install zugpferd
+gem install facture_x
 ```
 
 ## Usage
@@ -54,10 +54,10 @@ gem install zugpferd
 ### Reading a UBL invoice
 
 ```ruby
-require "zugpferd"
+require "facture_x"
 
 xml = File.read("invoice_ubl.xml")
-invoice = Zugpferd::UBL::Reader.new.read(xml)
+invoice = FactureX::UBL::Reader.new.read(xml)
 
 puts invoice.number          # BT-1
 puts invoice.seller.name     # BG-4
@@ -72,7 +72,7 @@ end
 
 ```ruby
 xml = File.read("invoice_cii.xml")
-invoice = Zugpferd::CII::Reader.new.read(xml)
+invoice = FactureX::CII::Reader.new.read(xml)
 ```
 
 The data model is identical regardless of whether UBL or CII is used.
@@ -80,40 +80,40 @@ The data model is identical regardless of whether UBL or CII is used.
 ### Writing a UBL invoice
 
 ```ruby
-invoice = Zugpferd::Model::Invoice.new(
+invoice = FactureX::Model::Invoice.new(
   number: "INV-2024-001",
   issue_date: Date.today,
   type_code: "380",
   currency_code: "EUR",
 )
 
-invoice.seller = Zugpferd::Model::TradeParty.new(name: "Seller GmbH")
-invoice.buyer  = Zugpferd::Model::TradeParty.new(name: "Buyer AG")
+invoice.seller = FactureX::Model::TradeParty.new(name: "Seller GmbH")
+invoice.buyer  = FactureX::Model::TradeParty.new(name: "Buyer AG")
 
 # ... set line items, tax, totals, payment ...
 
-xml = Zugpferd::UBL::Writer.new.write(invoice)
+xml = FactureX::UBL::Writer.new.write(invoice)
 File.write("output.xml", xml)
 ```
 
 ### Writing a Credit Note
 
 ```ruby
-credit_note = Zugpferd::Model::CreditNote.new(
+credit_note = FactureX::Model::CreditNote.new(
   number: "CN-2024-001",
   issue_date: Date.today,
 )
 
 # The writer automatically generates <CreditNote> instead of <Invoice>
-xml = Zugpferd::UBL::Writer.new.write(credit_note)
+xml = FactureX::UBL::Writer.new.write(credit_note)
 ```
 
 ### Converting between syntaxes
 
 ```ruby
 # Read CII, write as UBL
-invoice = Zugpferd::CII::Reader.new.read(cii_xml)
-ubl_xml = Zugpferd::UBL::Writer.new.write(invoice)
+invoice = FactureX::CII::Reader.new.read(cii_xml)
+ubl_xml = FactureX::UBL::Writer.new.write(invoice)
 ```
 
 ### Creating a ZUGFeRD / Factur-X PDF
@@ -121,12 +121,12 @@ ubl_xml = Zugpferd::UBL::Writer.new.write(invoice)
 Requires [Ghostscript](https://ghostscript.com/) installed on the system.
 
 ```ruby
-require "zugpferd"
-require "zugpferd/pdf"  # explicit opt-in
+require "facture_x"
+require "facture_x/pdf"  # explicit opt-in
 
-xml = Zugpferd::CII::Writer.new.write(invoice)
+xml = FactureX::CII::Writer.new.write(invoice)
 
-embedder = Zugpferd::PDF::Embedder.new
+embedder = FactureX::PDF::Embedder.new
 embedder.embed(
   pdf_path: "rechnung.pdf",
   xml: xml,
@@ -141,12 +141,12 @@ embedder.embed(
 Requires Java and Saxon HE. Install via `bin/setup-schemas`.
 
 ```ruby
-require "zugpferd"
-require "zugpferd/validation"  # explicit opt-in, requires Java + Saxon
+require "facture_x"
+require "facture_x/validation"  # explicit opt-in, requires Java + Saxon
 
-xml = Zugpferd::CII::Writer.new.write(invoice)
+xml = FactureX::CII::Writer.new.write(invoice)
 
-validator = Zugpferd::Validation::SchematronValidator.new(schemas_path: "vendor/schemas")
+validator = FactureX::Validation::SchematronValidator.new(schemas_path: "vendor/schemas")
 errors = validator.validate(xml, rule_set: :xrechnung_cii)
 fatals = errors.select { |e| e.flag == "fatal" }
 
@@ -192,6 +192,27 @@ The model maps to the Business Groups of EN 16931:
 bundle install
 bin/setup-schemas    # Downloads XSD schemas, CEN Schematron, XRechnung test suite
 bundle exec rake test
+```
+
+### Running integration tests
+
+Integration tests (Schematron validation, roundtrips) require Java. Install OpenJDK:
+
+```bash
+# macOS
+brew install openjdk
+sudo ln -sfn "$(brew --prefix openjdk)/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk.jdk
+
+# Ubuntu / Debian
+sudo apt-get install default-jre-headless
+```
+
+Then run the full suite:
+
+```bash
+bundle exec rake test              # unit + integration
+bundle exec rake test:unit         # unit tests only (no Java needed)
+bundle exec rake test:integration  # integration tests only (Java required)
 ```
 
 ## License

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Zugpferd',
+  title: 'FactureX',
   base: '/zugpferd/',
   // Deploy URL: https://alexzeitler.github.io/zugpferd/
   description: 'Ruby library for reading and writing EN 16931 electronic invoices (UBL 2.1 & UN/CEFACT CII)',

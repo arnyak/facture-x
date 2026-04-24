@@ -1,7 +1,7 @@
 require "test_helper"
-require "zugpferd/pdf"
-require "zugpferd/validation/pdf_validator"
-require "zugpferd/validation/mustang_validator"
+require "facture_x/pdf"
+require "facture_x/validation/pdf_validator"
+require "facture_x/validation/mustang_validator"
 require "tmpdir"
 
 class PdfEmbeddingTest < Minitest::Test
@@ -21,9 +21,9 @@ class PdfEmbeddingTest < Minitest::Test
       base_pdf = create_base_pdf(dir)
 
       invoice = build_sample_invoice
-      xml = Zugpferd::CII::Writer.new.write(invoice)
+      xml = FactureX::CII::Writer.new.write(invoice)
 
-      embedder = Zugpferd::PDF::Embedder.new
+      embedder = FactureX::PDF::Embedder.new
       result = embedder.embed(
         pdf_path: base_pdf,
         xml: xml,
@@ -48,9 +48,9 @@ class PdfEmbeddingTest < Minitest::Test
       base_pdf = create_base_pdf(dir)
 
       invoice = build_sample_invoice
-      xml = Zugpferd::UBL::Writer.new.write(invoice)
+      xml = FactureX::UBL::Writer.new.write(invoice)
 
-      embedder = Zugpferd::PDF::Embedder.new
+      embedder = FactureX::PDF::Embedder.new
       embedder.embed(
         pdf_path: base_pdf,
         xml: xml,
@@ -68,8 +68,8 @@ class PdfEmbeddingTest < Minitest::Test
     Dir.mktmpdir do |dir|
       base_pdf = create_base_pdf(dir)
       invoice = build_sample_invoice
-      xml = Zugpferd::CII::Writer.new.write(invoice)
-      embedder = Zugpferd::PDF::Embedder.new
+      xml = FactureX::CII::Writer.new.write(invoice)
+      embedder = FactureX::PDF::Embedder.new
 
       %w[1p0 2p0 2p1].each do |version|
         level = (version == "1p0") ? "BASIC" : "EN 16931"
@@ -98,7 +98,7 @@ class PdfEmbeddingTest < Minitest::Test
       base_pdf = create_base_pdf(dir)
       output_pdf = File.join(dir, "fixture_zugferd.pdf")
 
-      embedder = Zugpferd::PDF::Embedder.new
+      embedder = FactureX::PDF::Embedder.new
       embedder.embed(
         pdf_path: base_pdf,
         xml: xml,
@@ -140,7 +140,7 @@ class PdfEmbeddingTest < Minitest::Test
   end
 
   def build_sample_invoice
-    invoice = Zugpferd::Model::Invoice.new(
+    invoice = FactureX::Model::Invoice.new(
       number: "TEST-001",
       issue_date: Date.new(2024, 1, 15),
       currency_code: "EUR"
@@ -150,45 +150,45 @@ class PdfEmbeddingTest < Minitest::Test
     invoice.customization_id = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0"
     invoice.profile_id = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
 
-    invoice.seller = Zugpferd::Model::TradeParty.new(name: "Test Seller GmbH")
+    invoice.seller = FactureX::Model::TradeParty.new(name: "Test Seller GmbH")
     invoice.seller.vat_identifier = "DE123456789"
     invoice.seller.electronic_address = "seller@example.com"
     invoice.seller.electronic_address_scheme = "EM"
-    invoice.seller.postal_address = Zugpferd::Model::PostalAddress.new(
+    invoice.seller.postal_address = FactureX::Model::PostalAddress.new(
       country_code: "DE",
       city_name: "Berlin",
       postal_zone: "10115",
       street_name: "Teststr. 1"
     )
 
-    invoice.buyer = Zugpferd::Model::TradeParty.new(name: "Test Buyer AG")
+    invoice.buyer = FactureX::Model::TradeParty.new(name: "Test Buyer AG")
     invoice.buyer.electronic_address = "buyer@example.com"
     invoice.buyer.electronic_address_scheme = "EM"
-    invoice.buyer.postal_address = Zugpferd::Model::PostalAddress.new(
+    invoice.buyer.postal_address = FactureX::Model::PostalAddress.new(
       country_code: "DE",
       city_name: "Munich",
       postal_zone: "80331"
     )
 
-    line = Zugpferd::Model::LineItem.new(
+    line = FactureX::Model::LineItem.new(
       id: "1",
       invoiced_quantity: "1",
       unit_code: "C62",
       line_extension_amount: "100.00"
     )
-    line.item = Zugpferd::Model::Item.new(
+    line.item = FactureX::Model::Item.new(
       name: "Test Item",
       tax_category: "S",
       tax_percent: BigDecimal("19")
     )
-    line.price = Zugpferd::Model::Price.new(amount: "100.00")
+    line.price = FactureX::Model::Price.new(amount: "100.00")
     invoice.line_items << line
 
-    invoice.tax_breakdown = Zugpferd::Model::TaxBreakdown.new(
+    invoice.tax_breakdown = FactureX::Model::TaxBreakdown.new(
       tax_amount: "19.00",
       currency_code: "EUR"
     )
-    invoice.tax_breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(
+    invoice.tax_breakdown.subtotals << FactureX::Model::TaxSubtotal.new(
       taxable_amount: "100.00",
       tax_amount: "19.00",
       category_code: "S",
@@ -196,14 +196,14 @@ class PdfEmbeddingTest < Minitest::Test
       percent: BigDecimal("19")
     )
 
-    invoice.monetary_totals = Zugpferd::Model::MonetaryTotals.new(
+    invoice.monetary_totals = FactureX::Model::MonetaryTotals.new(
       line_extension_amount: "100.00",
       tax_exclusive_amount: "100.00",
       tax_inclusive_amount: "119.00",
       payable_amount: "119.00"
     )
 
-    invoice.payment_instructions = Zugpferd::Model::PaymentInstructions.new(
+    invoice.payment_instructions = FactureX::Model::PaymentInstructions.new(
       payment_means_code: "58",
       account_id: "DE89370400440532013000"
     )
@@ -220,7 +220,7 @@ class PdfVeraPdfValidationTest < Minitest::Test
   def setup
     skip "zugferd.ps not found (run bin/setup-schemas)" unless File.exist?(File.join(VENDOR_ZUGFERD, "zugferd.ps"))
     skip "Ghostscript not available" unless ghostscript_available?
-    @pdf_validator = Zugpferd::Validation::PdfValidator.new
+    @pdf_validator = FactureX::Validation::PdfValidator.new
     skip "veraPDF not available (start with: docker compose up -d verapdf)" unless @pdf_validator.available?
   end
 
@@ -262,9 +262,9 @@ class PdfVeraPdfValidationTest < Minitest::Test
       [:out, :err] => File::NULL)
 
     invoice = build_minimal_invoice
-    xml = Zugpferd::CII::Writer.new.write(invoice)
+    xml = FactureX::CII::Writer.new.write(invoice)
 
-    Zugpferd::PDF::Embedder.new.embed(
+    FactureX::PDF::Embedder.new.embed(
       pdf_path: base_pdf,
       xml: xml,
       output_path: output_pdf,
@@ -276,7 +276,7 @@ class PdfVeraPdfValidationTest < Minitest::Test
   end
 
   def build_minimal_invoice
-    invoice = Zugpferd::Model::Invoice.new(
+    invoice = FactureX::Model::Invoice.new(
       number: "VAL-001",
       issue_date: Date.new(2024, 1, 15),
       currency_code: "EUR"
@@ -285,40 +285,40 @@ class PdfVeraPdfValidationTest < Minitest::Test
     invoice.customization_id = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0"
     invoice.profile_id = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
 
-    invoice.seller = Zugpferd::Model::TradeParty.new(name: "Seller GmbH")
+    invoice.seller = FactureX::Model::TradeParty.new(name: "Seller GmbH")
     invoice.seller.vat_identifier = "DE123456789"
     invoice.seller.electronic_address = "seller@example.com"
     invoice.seller.electronic_address_scheme = "EM"
-    invoice.seller.postal_address = Zugpferd::Model::PostalAddress.new(
+    invoice.seller.postal_address = FactureX::Model::PostalAddress.new(
       country_code: "DE", city_name: "Berlin", postal_zone: "10115", street_name: "Str. 1"
     )
 
-    invoice.buyer = Zugpferd::Model::TradeParty.new(name: "Buyer AG")
+    invoice.buyer = FactureX::Model::TradeParty.new(name: "Buyer AG")
     invoice.buyer.electronic_address = "buyer@example.com"
     invoice.buyer.electronic_address_scheme = "EM"
-    invoice.buyer.postal_address = Zugpferd::Model::PostalAddress.new(
+    invoice.buyer.postal_address = FactureX::Model::PostalAddress.new(
       country_code: "DE", city_name: "Munich", postal_zone: "80331"
     )
 
-    line = Zugpferd::Model::LineItem.new(
+    line = FactureX::Model::LineItem.new(
       id: "1", invoiced_quantity: "1", unit_code: "C62", line_extension_amount: "100.00"
     )
-    line.item = Zugpferd::Model::Item.new(name: "Item", tax_category: "S", tax_percent: BigDecimal("19"))
-    line.price = Zugpferd::Model::Price.new(amount: "100.00")
+    line.item = FactureX::Model::Item.new(name: "Item", tax_category: "S", tax_percent: BigDecimal("19"))
+    line.price = FactureX::Model::Price.new(amount: "100.00")
     invoice.line_items << line
 
-    invoice.tax_breakdown = Zugpferd::Model::TaxBreakdown.new(tax_amount: "19.00", currency_code: "EUR")
-    invoice.tax_breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(
+    invoice.tax_breakdown = FactureX::Model::TaxBreakdown.new(tax_amount: "19.00", currency_code: "EUR")
+    invoice.tax_breakdown.subtotals << FactureX::Model::TaxSubtotal.new(
       taxable_amount: "100.00", tax_amount: "19.00", category_code: "S",
       currency_code: "EUR", percent: BigDecimal("19")
     )
 
-    invoice.monetary_totals = Zugpferd::Model::MonetaryTotals.new(
+    invoice.monetary_totals = FactureX::Model::MonetaryTotals.new(
       line_extension_amount: "100.00", tax_exclusive_amount: "100.00",
       tax_inclusive_amount: "119.00", payable_amount: "119.00"
     )
 
-    invoice.payment_instructions = Zugpferd::Model::PaymentInstructions.new(
+    invoice.payment_instructions = FactureX::Model::PaymentInstructions.new(
       payment_means_code: "58", account_id: "DE89370400440532013000"
     )
 
@@ -334,7 +334,7 @@ class PdfMustangValidationTest < Minitest::Test
   def setup
     skip "zugferd.ps not found (run bin/setup-schemas)" unless File.exist?(File.join(VENDOR_ZUGFERD, "zugferd.ps"))
     skip "Ghostscript not available" unless ghostscript_available?
-    @mustang_validator = Zugpferd::Validation::MustangValidator.new
+    @mustang_validator = FactureX::Validation::MustangValidator.new
     skip "Mustangproject not available (build with: docker compose build mustang)" unless @mustang_validator.available?
   end
 
@@ -375,9 +375,9 @@ class PdfMustangValidationTest < Minitest::Test
       [:out, :err] => File::NULL)
 
     invoice = build_minimal_invoice
-    xml = Zugpferd::CII::Writer.new.write(invoice)
+    xml = FactureX::CII::Writer.new.write(invoice)
 
-    Zugpferd::PDF::Embedder.new.embed(
+    FactureX::PDF::Embedder.new.embed(
       pdf_path: base_pdf,
       xml: xml,
       output_path: output_pdf,
@@ -389,7 +389,7 @@ class PdfMustangValidationTest < Minitest::Test
   end
 
   def build_minimal_invoice
-    invoice = Zugpferd::Model::Invoice.new(
+    invoice = FactureX::Model::Invoice.new(
       number: "VAL-001",
       issue_date: Date.new(2024, 1, 15),
       currency_code: "EUR"
@@ -398,40 +398,40 @@ class PdfMustangValidationTest < Minitest::Test
     invoice.customization_id = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0"
     invoice.profile_id = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
 
-    invoice.seller = Zugpferd::Model::TradeParty.new(name: "Seller GmbH")
+    invoice.seller = FactureX::Model::TradeParty.new(name: "Seller GmbH")
     invoice.seller.vat_identifier = "DE123456789"
     invoice.seller.electronic_address = "seller@example.com"
     invoice.seller.electronic_address_scheme = "EM"
-    invoice.seller.postal_address = Zugpferd::Model::PostalAddress.new(
+    invoice.seller.postal_address = FactureX::Model::PostalAddress.new(
       country_code: "DE", city_name: "Berlin", postal_zone: "10115", street_name: "Str. 1"
     )
 
-    invoice.buyer = Zugpferd::Model::TradeParty.new(name: "Buyer AG")
+    invoice.buyer = FactureX::Model::TradeParty.new(name: "Buyer AG")
     invoice.buyer.electronic_address = "buyer@example.com"
     invoice.buyer.electronic_address_scheme = "EM"
-    invoice.buyer.postal_address = Zugpferd::Model::PostalAddress.new(
+    invoice.buyer.postal_address = FactureX::Model::PostalAddress.new(
       country_code: "DE", city_name: "Munich", postal_zone: "80331"
     )
 
-    line = Zugpferd::Model::LineItem.new(
+    line = FactureX::Model::LineItem.new(
       id: "1", invoiced_quantity: "1", unit_code: "C62", line_extension_amount: "100.00"
     )
-    line.item = Zugpferd::Model::Item.new(name: "Item", tax_category: "S", tax_percent: BigDecimal("19"))
-    line.price = Zugpferd::Model::Price.new(amount: "100.00")
+    line.item = FactureX::Model::Item.new(name: "Item", tax_category: "S", tax_percent: BigDecimal("19"))
+    line.price = FactureX::Model::Price.new(amount: "100.00")
     invoice.line_items << line
 
-    invoice.tax_breakdown = Zugpferd::Model::TaxBreakdown.new(tax_amount: "19.00", currency_code: "EUR")
-    invoice.tax_breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(
+    invoice.tax_breakdown = FactureX::Model::TaxBreakdown.new(tax_amount: "19.00", currency_code: "EUR")
+    invoice.tax_breakdown.subtotals << FactureX::Model::TaxSubtotal.new(
       taxable_amount: "100.00", tax_amount: "19.00", category_code: "S",
       currency_code: "EUR", percent: BigDecimal("19")
     )
 
-    invoice.monetary_totals = Zugpferd::Model::MonetaryTotals.new(
+    invoice.monetary_totals = FactureX::Model::MonetaryTotals.new(
       line_extension_amount: "100.00", tax_exclusive_amount: "100.00",
       tax_inclusive_amount: "119.00", payable_amount: "119.00"
     )
 
-    invoice.payment_instructions = Zugpferd::Model::PaymentInstructions.new(
+    invoice.payment_instructions = FactureX::Model::PaymentInstructions.new(
       payment_means_code: "58", account_id: "DE89370400440532013000"
     )
 

@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY Gemfile Gemfile.lock zugpferd.gemspec ./
-RUN mkdir -p lib && touch lib/zugpferd.rb
+COPY Gemfile Gemfile.lock facture_x.gemspec ./
+RUN mkdir -p lib && touch lib/facture_x.rb
 RUN bundle install
 
 CMD ["bundle", "exec", "rake", "test"]

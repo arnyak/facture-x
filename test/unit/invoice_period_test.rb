@@ -6,11 +6,11 @@ class InvoicePeriodTest < Minitest::Test
 
   def setup
     @inv = build_invoice
-    @inv.invoice_period = Zugpferd::Model::InvoicePeriod.new(
+    @inv.invoice_period = FactureX::Model::InvoicePeriod.new(
       start_date: Date.new(2024, 3, 1),
       end_date: Date.new(2024, 3, 31),
     )
-    @inv.line_items.first.invoice_period = Zugpferd::Model::InvoicePeriod.new(
+    @inv.line_items.first.invoice_period = FactureX::Model::InvoicePeriod.new(
       start_date: Date.new(2024, 3, 1),
       end_date: Date.new(2024, 3, 15),
     )

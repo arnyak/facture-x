@@ -7,7 +7,7 @@ TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 CURL_UA="Mozilla/5.0"
-ZUGPFERD_REPO="https://github.com/alexzeitler/zugpferd"
+UPSTREAM_REPO="https://github.com/alexzeitler/zugpferd"
 
 # --- Saxon HE (for Schematron validation) ---
 
@@ -61,7 +61,7 @@ CII_DIR="$SCHEMAS_DIR/cii"
 
 if [ ! -f "$CII_DIR/CrossIndustryInvoice_100pD16B.xsd" ]; then
   echo "    Downloading D16B SCRDM (Subset) CII..."
-  CII_URL="$ZUGPFERD_REPO/releases/download/v0.3.3/D16B_SCRDM__Subset__CII.zip"
+  CII_URL="$UPSTREAM_REPO/releases/download/v0.3.3/D16B_SCRDM__Subset__CII.zip"
   curl -fsSL -A "$CURL_UA" "$CII_URL" -o "$TMP_DIR/cii-outer.zip"
 
   mkdir -p "$CII_DIR"

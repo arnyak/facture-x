@@ -10,10 +10,10 @@ class LineItemEnhancedTest < Minitest::Test
     line.order_line_reference = "5"
     line.object_identifier = "OBJ-001"
     line.object_identifier_scheme = "ABZ"
-    line.allowance_charges << Zugpferd::Model::AllowanceCharge.new(
+    line.allowance_charges << FactureX::Model::AllowanceCharge.new(
       charge_indicator: false, amount: "10.00", reason: "Discount",
     )
-    line.allowance_charges << Zugpferd::Model::AllowanceCharge.new(
+    line.allowance_charges << FactureX::Model::AllowanceCharge.new(
       charge_indicator: true, amount: "5.00", reason: "Service fee",
     )
   end

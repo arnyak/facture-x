@@ -4,13 +4,13 @@ module ValidatorHelper
   end
 
   def schematron_validator
-    @schematron_validator ||= Zugpferd::Validation::SchematronValidator.new(
+    @schematron_validator ||= FactureX::Validation::SchematronValidator.new(
       schemas_path: schemas_path
     )
   end
 
   def schema_validator
-    @schema_validator ||= Zugpferd::Validation::SchemaValidator.new(
+    @schema_validator ||= FactureX::Validation::SchemaValidator.new(
       schemas_path: schemas_path
     )
   end

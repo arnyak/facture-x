@@ -1,0 +1,28 @@
+require_relative "facture_x/model/billing_document"
+require_relative "facture_x/model/invoice"
+require_relative "facture_x/model/credit_note"
+require_relative "facture_x/model/corrected_invoice"
+require_relative "facture_x/model/self_billed_invoice"
+require_relative "facture_x/model/partial_invoice"
+require_relative "facture_x/model/prepayment_invoice"
+require_relative "facture_x/model/trade_party"
+require_relative "facture_x/model/postal_address"
+require_relative "facture_x/model/contact"
+require_relative "facture_x/model/line_item"
+require_relative "facture_x/model/item"
+require_relative "facture_x/model/price"
+require_relative "facture_x/model/monetary_totals"
+require_relative "facture_x/model/tax_breakdown"
+require_relative "facture_x/model/tax_subtotal"
+require_relative "facture_x/model/payment_instructions"
+require_relative "facture_x/model/allowance_charge"
+require_relative "facture_x/model/invoice_period"
+require_relative "facture_x/model/document_reference"
+require_relative "facture_x/ubl/reader"
+require_relative "facture_x/ubl/writer"
+require_relative "facture_x/cii/reader"
+require_relative "facture_x/cii/writer"
+
+module FactureX
+  class Error < StandardError; end
+end

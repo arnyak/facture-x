@@ -4,14 +4,14 @@ outline: deep
 
 # PDF Embedder
 
-Embed XML invoices into PDF/A-3 documents using Ghostscript. Loaded via `require "zugpferd/pdf"` (not included by default).
+Embed XML invoices into PDF/A-3 documents using Ghostscript. Loaded via `require "facture_x/pdf"` (not included by default).
 
 ## Embedder
 
 ```ruby
-require "zugpferd/pdf"
+require "facture_x/pdf"
 
-embedder = Zugpferd::PDF::Embedder.new
+embedder = FactureX::PDF::Embedder.new
 embedder.embed(
   pdf_path: "input.pdf",
   xml: xml_string,
@@ -39,19 +39,19 @@ Converts a PDF to PDF/A-3 and embeds the given XML as an associated file.
 
 | Exception | When |
 |-----------|------|
-| `Zugpferd::PDF::Embedder::GhostscriptNotFound` | `gs` is not installed or not in PATH |
-| `Zugpferd::PDF::Embedder::EmbedError` | Ghostscript execution failed or `zugferd.ps` / ICC profile missing |
+| `FactureX::PDF::Embedder::GhostscriptNotFound` | `gs` is not installed or not in PATH |
+| `FactureX::PDF::Embedder::EmbedError` | Ghostscript execution failed or `zugferd.ps` / ICC profile missing |
 | `ArgumentError` | Invalid version, conformance level, or input file not found |
 
 ## Constants
 
-### `Zugpferd::PDF::Embedder::VERSIONS`
+### `FactureX::PDF::Embedder::VERSIONS`
 
 ```ruby
 %w[rc 1p0 2p0 2p1]
 ```
 
-### `Zugpferd::PDF::Embedder::CONFORMANCE_LEVELS`
+### `FactureX::PDF::Embedder::CONFORMANCE_LEVELS`
 
 Valid conformance levels per version:
 
@@ -63,10 +63,10 @@ Valid conformance levels per version:
 
 ## Exceptions
 
-### `Zugpferd::PDF::Embedder::GhostscriptNotFound`
+### `FactureX::PDF::Embedder::GhostscriptNotFound`
 
-Inherits from `Zugpferd::Error`. Raised when the `gs` binary cannot be found in PATH.
+Inherits from `FactureX::Error`. Raised when the `gs` binary cannot be found in PATH.
 
-### `Zugpferd::PDF::Embedder::EmbedError`
+### `FactureX::PDF::Embedder::EmbedError`
 
-Inherits from `Zugpferd::Error`. Raised when Ghostscript returns a non-zero exit code, or when required vendor files (`zugferd.ps`, `default_rgb.icc`) are missing.
+Inherits from `FactureX::Error`. Raised when Ghostscript returns a non-zero exit code, or when required vendor files (`zugferd.ps`, `default_rgb.icc`) are missing.

@@ -24,8 +24,8 @@ class UBLRoundtripTest < Minitest::Test
       end
 
       xml = File.read(fixture)
-      invoice = Zugpferd::UBL::Reader.new.read(xml)
-      output = Zugpferd::UBL::Writer.new.write(invoice)
+      invoice = FactureX::UBL::Reader.new.read(xml)
+      output = FactureX::UBL::Writer.new.write(invoice)
       errors = schematron_validator.validate_all(output,
         rule_sets: [:cen_ubl, :xrechnung_ubl])
       fatals = errors.select { |e| e.flag == "fatal" }
@@ -50,13 +50,13 @@ class UBLCreditNoteRoundtripTest < Minitest::Test
 
   def test_roundtrip_credit_note
     xml = File.read(FIXTURE)
-    invoice = Zugpferd::UBL::Reader.new.read(xml)
+    invoice = FactureX::UBL::Reader.new.read(xml)
 
-    assert_instance_of Zugpferd::Model::CreditNote, invoice
+    assert_instance_of FactureX::Model::CreditNote, invoice
     assert_equal "381", invoice.type_code
     assert_equal "018304 / 28865", invoice.number
 
-    output = Zugpferd::UBL::Writer.new.write(invoice)
+    output = FactureX::UBL::Writer.new.write(invoice)
 
     doc = Nokogiri::XML(output)
     assert_equal "CreditNote", doc.root.name
@@ -96,8 +96,8 @@ class CIIRoundtripTest < Minitest::Test
       end
 
       xml = File.read(fixture)
-      invoice = Zugpferd::CII::Reader.new.read(xml)
-      output = Zugpferd::CII::Writer.new.write(invoice)
+      invoice = FactureX::CII::Reader.new.read(xml)
+      output = FactureX::CII::Writer.new.write(invoice)
       errors = schematron_validator.validate_all(output,
         rule_sets: [:cen_cii, :xrechnung_cii])
       fatals = errors.select { |e| e.flag == "fatal" }

@@ -4,7 +4,7 @@ outline: deep
 
 # Reading Documents
 
-Zugpferd can read XRechnung and ZUGFeRD documents in both UBL 2.1 and UN/CEFACT CII into the same data model.
+FactureX can read XRechnung and ZUGFeRD documents in both UBL 2.1 and UN/CEFACT CII into the same data model.
 
 ## UBL Documents
 
@@ -12,8 +12,8 @@ The UBL reader automatically detects the document type from the root element and
 
 ```ruby
 xml = File.read("invoice_ubl.xml")
-doc = Zugpferd::UBL::Reader.new.read(xml)
-doc.class      # => Zugpferd::Model::Invoice or Zugpferd::Model::CreditNote
+doc = FactureX::UBL::Reader.new.read(xml)
+doc.class      # => FactureX::Model::Invoice or FactureX::Model::CreditNote
 doc.type_code  # => "380" for Invoice, "381" for CreditNote
 ```
 
@@ -23,8 +23,8 @@ The CII reader maps the type code to the appropriate model class (e.g. `CreditNo
 
 ```ruby
 xml = File.read("invoice_cii.xml")
-doc = Zugpferd::CII::Reader.new.read(xml)
-doc.class  # => Zugpferd::Model::Invoice, Zugpferd::Model::CreditNote, etc.
+doc = FactureX::CII::Reader.new.read(xml)
+doc.class  # => FactureX::Model::Invoice, FactureX::Model::CreditNote, etc.
 ```
 
 ## Accessing Document Data

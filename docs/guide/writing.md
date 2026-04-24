@@ -9,10 +9,10 @@ Build an XRechnung or ZUGFeRD billing document from scratch using the data model
 ## Building an Invoice
 
 ```ruby
-require "zugpferd"
+require "facture_x"
 require "bigdecimal"
 
-invoice = Zugpferd::Model::Invoice.new(
+invoice = FactureX::Model::Invoice.new(
   number: "INV-2024-001",
   issue_date: Date.new(2024, 1, 15),
   currency_code: "EUR"
@@ -23,11 +23,11 @@ invoice.customization_id = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:ko
 invoice.profile_id = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
 
 # Seller
-invoice.seller = Zugpferd::Model::TradeParty.new(name: "Seller GmbH")
+invoice.seller = FactureX::Model::TradeParty.new(name: "Seller GmbH")
 invoice.seller.vat_identifier = "DE123456789"
 invoice.seller.electronic_address = "seller@example.com"
 invoice.seller.electronic_address_scheme = "EM"
-invoice.seller.postal_address = Zugpferd::Model::PostalAddress.new(
+invoice.seller.postal_address = FactureX::Model::PostalAddress.new(
   country_code: "DE",
   city_name: "Frankfurt am Main",
   postal_zone: "60311",
@@ -35,36 +35,36 @@ invoice.seller.postal_address = Zugpferd::Model::PostalAddress.new(
 )
 
 # Buyer
-invoice.buyer = Zugpferd::Model::TradeParty.new(name: "Buyer AG")
+invoice.buyer = FactureX::Model::TradeParty.new(name: "Buyer AG")
 invoice.buyer.electronic_address = "buyer@example.com"
 invoice.buyer.electronic_address_scheme = "EM"
-invoice.buyer.postal_address = Zugpferd::Model::PostalAddress.new(
+invoice.buyer.postal_address = FactureX::Model::PostalAddress.new(
   country_code: "DE",
   city_name: "Munich",
   postal_zone: "80331"
 )
 
 # Line item
-line = Zugpferd::Model::LineItem.new(
+line = FactureX::Model::LineItem.new(
   id: "1",
   invoiced_quantity: "10",
   unit_code: "C62",
   line_extension_amount: "1000.00"
 )
-line.item = Zugpferd::Model::Item.new(
+line.item = FactureX::Model::Item.new(
   name: "Consulting Services",
   tax_category: "S",
   tax_percent: BigDecimal("19")
 )
-line.price = Zugpferd::Model::Price.new(amount: "100.00")
+line.price = FactureX::Model::Price.new(amount: "100.00")
 invoice.line_items << line
 
 # Tax breakdown
-invoice.tax_breakdown = Zugpferd::Model::TaxBreakdown.new(
+invoice.tax_breakdown = FactureX::Model::TaxBreakdown.new(
   tax_amount: "190.00",
   currency_code: "EUR"
 )
-invoice.tax_breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(
+invoice.tax_breakdown.subtotals << FactureX::Model::TaxSubtotal.new(
   taxable_amount: "1000.00",
   tax_amount: "190.00",
   category_code: "S",
@@ -73,7 +73,7 @@ invoice.tax_breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(
 )
 
 # Monetary totals
-invoice.monetary_totals = Zugpferd::Model::MonetaryTotals.new(
+invoice.monetary_totals = FactureX::Model::MonetaryTotals.new(
   line_extension_amount: "1000.00",
   tax_exclusive_amount: "1000.00",
   tax_inclusive_amount: "1190.00",
@@ -81,7 +81,7 @@ invoice.monetary_totals = Zugpferd::Model::MonetaryTotals.new(
 )
 
 # Payment
-invoice.payment_instructions = Zugpferd::Model::PaymentInstructions.new(
+invoice.payment_instructions = FactureX::Model::PaymentInstructions.new(
   payment_means_code: "58",
   account_id: "DE89370400440532013000"
 )
@@ -93,22 +93,22 @@ Each document type has its own class with a default `type_code`:
 
 ```ruby
 # Commercial Invoice (type_code: "380")
-invoice = Zugpferd::Model::Invoice.new(number: "INV-001", issue_date: Date.today)
+invoice = FactureX::Model::Invoice.new(number: "INV-001", issue_date: Date.today)
 
 # Credit Note (type_code: "381") — UBL writer generates <CreditNote> root element
-credit_note = Zugpferd::Model::CreditNote.new(number: "CN-001", issue_date: Date.today)
+credit_note = FactureX::Model::CreditNote.new(number: "CN-001", issue_date: Date.today)
 
 # Corrected Invoice (type_code: "384")
-corrected = Zugpferd::Model::CorrectedInvoice.new(number: "CORR-001", issue_date: Date.today)
+corrected = FactureX::Model::CorrectedInvoice.new(number: "CORR-001", issue_date: Date.today)
 
 # Self-billed Invoice (type_code: "389")
-self_billed = Zugpferd::Model::SelfBilledInvoice.new(number: "SB-001", issue_date: Date.today)
+self_billed = FactureX::Model::SelfBilledInvoice.new(number: "SB-001", issue_date: Date.today)
 
 # Partial Invoice (type_code: "326")
-partial = Zugpferd::Model::PartialInvoice.new(number: "P-001", issue_date: Date.today)
+partial = FactureX::Model::PartialInvoice.new(number: "P-001", issue_date: Date.today)
 
 # Prepayment Invoice (type_code: "386")
-prepayment = Zugpferd::Model::PrepaymentInvoice.new(number: "PRE-001", issue_date: Date.today)
+prepayment = FactureX::Model::PrepaymentInvoice.new(number: "PRE-001", issue_date: Date.today)
 ```
 
 | Class | Code | Description |
@@ -123,14 +123,14 @@ prepayment = Zugpferd::Model::PrepaymentInvoice.new(number: "PRE-001", issue_dat
 ## Writing to UBL
 
 ```ruby
-xml = Zugpferd::UBL::Writer.new.write(document)
+xml = FactureX::UBL::Writer.new.write(document)
 File.write("output_ubl.xml", xml)
 ```
 
 ## Writing to CII
 
 ```ruby
-xml = Zugpferd::CII::Writer.new.write(document)
+xml = FactureX::CII::Writer.new.write(document)
 File.write("output_cii.xml", xml)
 ```
 
@@ -140,10 +140,10 @@ Convert between UBL and CII by reading one format and writing the other:
 
 ```ruby
 # CII to UBL
-doc = Zugpferd::CII::Reader.new.read(cii_xml)
-ubl_xml = Zugpferd::UBL::Writer.new.write(doc)
+doc = FactureX::CII::Reader.new.read(cii_xml)
+ubl_xml = FactureX::UBL::Writer.new.write(doc)
 
 # UBL to CII
-doc = Zugpferd::UBL::Reader.new.read(ubl_xml)
-cii_xml = Zugpferd::CII::Writer.new.write(doc)
+doc = FactureX::UBL::Reader.new.read(ubl_xml)
+cii_xml = FactureX::CII::Writer.new.write(doc)
 ```

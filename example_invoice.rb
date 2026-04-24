@@ -1,14 +1,14 @@
 #!/usr/bin/env ruby
 require "bundler/setup"
-require "zugpferd"
-require "zugpferd/pdf"
-require "zugpferd/validation"
+require "facture_x"
+require "facture_x/pdf"
+require "facture_x/validation"
 require "bigdecimal"
 require "tempfile"
 
 # --- 1. Invoice aufbauen ---
 
-invoice = Zugpferd::Model::Invoice.new(
+invoice = FactureX::Model::Invoice.new(
   number: "RE-2024-0042",
   issue_date: Date.new(2024, 6, 15),
   currency_code: "EUR"
@@ -21,27 +21,27 @@ invoice.customization_id = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:ko
 invoice.profile_id = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
 
 # Seller
-invoice.seller = Zugpferd::Model::TradeParty.new(name: "Zugpferd GmbH")
+invoice.seller = FactureX::Model::TradeParty.new(name: "FactureX GmbH")
 invoice.seller.vat_identifier = "DE123456789"
-invoice.seller.electronic_address = "zugpferd@example.com"
+invoice.seller.electronic_address = "facturex@example.com"
 invoice.seller.electronic_address_scheme = "EM"
-invoice.seller.postal_address = Zugpferd::Model::PostalAddress.new(
+invoice.seller.postal_address = FactureX::Model::PostalAddress.new(
   country_code: "DE",
   city_name: "Frankfurt am Main",
   postal_zone: "60311",
   street_name: "Kaiserstr. 42"
 )
-invoice.seller.contact = Zugpferd::Model::Contact.new(
+invoice.seller.contact = FactureX::Model::Contact.new(
   name: "Max Mustermann",
   telephone: "+49 69 12345678",
-  email: "rechnung@zugpferd.example.com"
+  email: "rechnung@facturex.example.com"
 )
 
 # Buyer
-invoice.buyer = Zugpferd::Model::TradeParty.new(name: "Muster AG")
+invoice.buyer = FactureX::Model::TradeParty.new(name: "Muster AG")
 invoice.buyer.electronic_address = "muster@example.com"
 invoice.buyer.electronic_address_scheme = "EM"
-invoice.buyer.postal_address = Zugpferd::Model::PostalAddress.new(
+invoice.buyer.postal_address = FactureX::Model::PostalAddress.new(
   country_code: "DE",
   city_name: "Berlin",
   postal_zone: "10115",
@@ -49,48 +49,48 @@ invoice.buyer.postal_address = Zugpferd::Model::PostalAddress.new(
 )
 
 # --- Position 1: Software-Lizenzen ---
-line1 = Zugpferd::Model::LineItem.new(
+line1 = FactureX::Model::LineItem.new(
   id: "1",
   invoiced_quantity: "5",
   unit_code: "C62",
   line_extension_amount: "2500.00"
 )
-line1.item = Zugpferd::Model::Item.new(
-  name: "Zugpferd Enterprise License",
+line1.item = FactureX::Model::Item.new(
+  name: "FactureX Enterprise License",
   tax_category: "S",
   tax_percent: BigDecimal("19")
 )
-line1.price = Zugpferd::Model::Price.new(amount: "500.00")
+line1.price = FactureX::Model::Price.new(amount: "500.00")
 invoice.line_items << line1
 
 # --- Position 2: Consulting ---
-line2 = Zugpferd::Model::LineItem.new(
+line2 = FactureX::Model::LineItem.new(
   id: "2",
   invoiced_quantity: "16",
   unit_code: "HUR",
   line_extension_amount: "2400.00"
 )
-line2.item = Zugpferd::Model::Item.new(
+line2.item = FactureX::Model::Item.new(
   name: "Technische Beratung E-Invoicing",
   tax_category: "S",
   tax_percent: BigDecimal("19")
 )
-line2.price = Zugpferd::Model::Price.new(amount: "150.00")
+line2.price = FactureX::Model::Price.new(amount: "150.00")
 invoice.line_items << line2
 
 # --- Position 3: Schulung ---
-line3 = Zugpferd::Model::LineItem.new(
+line3 = FactureX::Model::LineItem.new(
   id: "3",
   invoiced_quantity: "1",
   unit_code: "C62",
   line_extension_amount: "1800.00"
 )
-line3.item = Zugpferd::Model::Item.new(
+line3.item = FactureX::Model::Item.new(
   name: "Workshop: XRechnung & ZUGFeRD in der Praxis (2 Tage)",
   tax_category: "S",
   tax_percent: BigDecimal("19")
 )
-line3.price = Zugpferd::Model::Price.new(amount: "1800.00")
+line3.price = FactureX::Model::Price.new(amount: "1800.00")
 invoice.line_items << line3
 
 # --- Steuer ---
@@ -98,11 +98,11 @@ netto = BigDecimal("6700.00")
 steuer = BigDecimal("1273.00")
 brutto = BigDecimal("7973.00")
 
-invoice.tax_breakdown = Zugpferd::Model::TaxBreakdown.new(
+invoice.tax_breakdown = FactureX::Model::TaxBreakdown.new(
   tax_amount: steuer.to_s("F"),
   currency_code: "EUR"
 )
-invoice.tax_breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(
+invoice.tax_breakdown.subtotals << FactureX::Model::TaxSubtotal.new(
   taxable_amount: netto.to_s("F"),
   tax_amount: steuer.to_s("F"),
   category_code: "S",
@@ -111,7 +111,7 @@ invoice.tax_breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(
 )
 
 # --- Summen ---
-invoice.monetary_totals = Zugpferd::Model::MonetaryTotals.new(
+invoice.monetary_totals = FactureX::Model::MonetaryTotals.new(
   line_extension_amount: netto.to_s("F"),
   tax_exclusive_amount: netto.to_s("F"),
   tax_inclusive_amount: brutto.to_s("F"),
@@ -119,17 +119,17 @@ invoice.monetary_totals = Zugpferd::Model::MonetaryTotals.new(
 )
 
 # --- Zahlung ---
-invoice.payment_instructions = Zugpferd::Model::PaymentInstructions.new(
+invoice.payment_instructions = FactureX::Model::PaymentInstructions.new(
   payment_means_code: "58",
   account_id: "DE89370400440532013000"
 )
 
 # --- 2. CII-XML erzeugen und validieren ---
-xml = Zugpferd::CII::Writer.new.write(invoice)
+xml = FactureX::CII::Writer.new.write(invoice)
 File.write("example_invoice.xml", xml)
 puts "XML geschrieben: example_invoice.xml"
 
-validator = Zugpferd::Validation::SchematronValidator.new(schemas_path: "vendor/schemas")
+validator = FactureX::Validation::SchematronValidator.new(schemas_path: "vendor/schemas")
 errors = validator.validate_all(xml, rule_sets: [:cen_cii, :xrechnung_cii])
 fatals = errors.select { |e| e.flag == "fatal" }
 
@@ -147,7 +147,7 @@ ps_content = <<~PS
   72 750 moveto (Rechnung RE-2024-0042) show
 
   /Helvetica findfont 11 scalefont setfont
-  72 710 moveto (Zugpferd GmbH) show
+  72 710 moveto (FactureX GmbH) show
   72 696 moveto (Kaiserstr. 42, 60311 Frankfurt am Main) show
   72 682 moveto (USt-IdNr.: DE123456789) show
 
@@ -172,7 +172,7 @@ ps_content = <<~PS
   /Helvetica findfont 10 scalefont setfont
 
   72 530 moveto (1) show
-  110 530 moveto (Zugpferd Enterprise License) show
+  110 530 moveto (FactureX Enterprise License) show
   350 530 moveto (5) show
   410 530 moveto (Stk) show
   460 530 moveto (500,00) show
@@ -225,7 +225,7 @@ puts "Basis-PDF erzeugt: #{base_pdf}"
 
 # --- 4. XML in PDF/A-3 einbetten ---
 output_pdf = "example_invoice_zugferd.pdf"
-embedder = Zugpferd::PDF::Embedder.new
+embedder = FactureX::PDF::Embedder.new
 embedder.embed(
   pdf_path: base_pdf,
   xml: xml,

@@ -20,7 +20,7 @@
   <text x="80" y="340" font-family="monospace" font-size="200" fill="#4fc3f7" opacity="0.08">&lt;/&gt;</text>
 
   <!-- Title -->
-  <text x="600" y="240" font-family="system-ui, -apple-system, sans-serif" font-size="96" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="-2">Zugpferd</text>
+  <text x="600" y="240" font-family="system-ui, -apple-system, sans-serif" font-size="96" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="-2">FactureX</text>
 
   <!-- Subtitle -->
   <text x="600" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#90caf9" text-anchor="middle">DIN EN 16931 E-Invoicing for Ruby</text>

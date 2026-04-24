@@ -6,7 +6,7 @@ class PostalAddressTest < Minitest::Test
 
   def setup
     @inv = build_invoice
-    @inv.seller.postal_address = Zugpferd::Model::PostalAddress.new(
+    @inv.seller.postal_address = FactureX::Model::PostalAddress.new(
       country_code: "FR",
       street_name: "1 rue du Commerce",
       additional_street_name: "Batiment A",
@@ -88,7 +88,7 @@ class PostalAddressTest < Minitest::Test
   # --- Omission ---
 
   def test_cii_omits_optional_fields_when_nil
-    @inv.seller.postal_address = Zugpferd::Model::PostalAddress.new(country_code: "DE")
+    @inv.seller.postal_address = FactureX::Model::PostalAddress.new(country_code: "DE")
     xml, = cii_roundtrip(@inv)
     doc = parse_xml(xml)
     assert_nil doc.at_xpath("//ram:SellerTradeParty/ram:PostalTradeAddress/ram:LineTwo", CII_NS)

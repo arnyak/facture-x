@@ -9,25 +9,25 @@ Read and write documents in UBL 2.1 (OASIS) format, as used by XRechnung, ZUGFeR
 ## Reader
 
 ```ruby
-reader = Zugpferd::UBL::Reader.new
+reader = FactureX::UBL::Reader.new
 invoice = reader.read(xml_string)
 ```
 
 ### `read(xml_string) → BillingDocument`
 
-Parses a UBL 2.1 Invoice or Credit Note XML string and returns the appropriate model class. Credit Notes (`<CreditNote>` root element) return a `Zugpferd::Model::CreditNote`, all others return a `Zugpferd::Model::Invoice`.
+Parses a UBL 2.1 Invoice or Credit Note XML string and returns the appropriate model class. Credit Notes (`<CreditNote>` root element) return a `FactureX::Model::CreditNote`, all others return a `FactureX::Model::Invoice`.
 
 **Parameters:**
 - `xml_string` (`String`) — Valid UBL 2.1 Invoice or Credit Note XML
 
-**Returns:** `Zugpferd::Model::Invoice` or `Zugpferd::Model::CreditNote`
+**Returns:** `FactureX::Model::Invoice` or `FactureX::Model::CreditNote`
 
 **Raises:** `Nokogiri::XML::SyntaxError` if the XML is malformed
 
 ## Writer
 
 ```ruby
-writer = Zugpferd::UBL::Writer.new
+writer = FactureX::UBL::Writer.new
 xml_string = writer.write(invoice)
 ```
 
@@ -36,7 +36,7 @@ xml_string = writer.write(invoice)
 Serializes a billing document to UBL 2.1 XML. When `type_code` is `"381"`, the writer generates a `<CreditNote>` document. All other type codes produce an `<Invoice>` document.
 
 **Parameters:**
-- `invoice` (`Zugpferd::Model::BillingDocument`) — The document to serialize
+- `invoice` (`FactureX::Model::BillingDocument`) — The document to serialize
 
 **Returns:** `String` — UTF-8 encoded XML
 
@@ -56,11 +56,11 @@ Everything else (parties, totals, tax, payment, allowances/charges) is identical
 
 ```ruby
 # Writing a credit note
-credit_note = Zugpferd::Model::CreditNote.new(
+credit_note = FactureX::Model::CreditNote.new(
   number: "CN-001",
   issue_date: Date.today,
 )
-xml = Zugpferd::UBL::Writer.new.write(credit_note)
+xml = FactureX::UBL::Writer.new.write(credit_note)
 # => <CreditNote xmlns="urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2" ...>
 ```
 

@@ -35,20 +35,20 @@ This downloads `zugferd.ps` and the sRGB ICC color profile into `vendor/zugferd/
 ## Basic Usage
 
 ```ruby
-require "zugpferd"
-require "zugpferd/pdf"  # explicit opt-in for PDF support
+require "facture_x"
+require "facture_x/pdf"  # explicit opt-in for PDF support
 
 # Build and serialize an invoice (CII is typical for ZUGFeRD)
-invoice = Zugpferd::Model::Invoice.new(
+invoice = FactureX::Model::Invoice.new(
   number: "RE-2024-001",
   issue_date: Date.new(2024, 6, 15),
   currency_code: "EUR"
 )
 # ... configure seller, buyer, line items, totals ...
-xml = Zugpferd::CII::Writer.new.write(invoice)
+xml = FactureX::CII::Writer.new.write(invoice)
 
 # Embed into an existing PDF
-embedder = Zugpferd::PDF::Embedder.new
+embedder = FactureX::PDF::Embedder.new
 embedder.embed(
   pdf_path: "rechnung.pdf",
   xml: xml,
@@ -106,9 +106,9 @@ embedder.embed(
 ```ruby
 begin
   embedder.embed(pdf_path: "input.pdf", xml: xml, output_path: "output.pdf")
-rescue Zugpferd::PDF::Embedder::GhostscriptNotFound
+rescue FactureX::PDF::Embedder::GhostscriptNotFound
   # Ghostscript is not installed or not in PATH
-rescue Zugpferd::PDF::Embedder::EmbedError => e
+rescue FactureX::PDF::Embedder::EmbedError => e
   # Ghostscript failed — e.message contains stderr output
 rescue ArgumentError => e
   # Invalid version, conformance level, or missing input file
@@ -155,9 +155,9 @@ docker compose build mustang
 ### veraPDF (PDF/A-3 compliance)
 
 ```ruby
-require "zugpferd/validation/pdf_validator"
+require "facture_x/validation/pdf_validator"
 
-validator = Zugpferd::Validation::PdfValidator.new
+validator = FactureX::Validation::PdfValidator.new
 result = validator.validate("output.pdf", profile: "3b")
 
 if result.compliant
@@ -170,9 +170,9 @@ end
 ### Mustangproject (full ZUGFeRD validation)
 
 ```ruby
-require "zugpferd/validation/mustang_validator"
+require "facture_x/validation/mustang_validator"
 
-validator = Zugpferd::Validation::MustangValidator.new
+validator = FactureX::Validation::MustangValidator.new
 result = validator.validate("output.pdf")
 
 if result.valid

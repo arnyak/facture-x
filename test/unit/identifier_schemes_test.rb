@@ -72,7 +72,7 @@ class IdentifierSchemesTest < Minitest::Test
   end
 
   def test_defaults_to_nil
-    party = Zugpferd::Model::TradeParty.new(name: "Test")
+    party = FactureX::Model::TradeParty.new(name: "Test")
     assert_nil party.identifier_scheme
     assert_nil party.legal_registration_id_scheme
   end

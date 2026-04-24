@@ -42,12 +42,12 @@ bin/setup-schemas
 The Schematron validator checks EN 16931 business rules (e.g. "payable amount must match line totals plus tax") and XRechnung-specific rules (e.g. "seller contact is required").
 
 ```ruby
-require "zugpferd"
-require "zugpferd/validation"  # explicit opt-in, requires Java + Saxon
+require "facture_x"
+require "facture_x/validation"  # explicit opt-in, requires Java + Saxon
 
-xml = Zugpferd::CII::Writer.new.write(invoice)
+xml = FactureX::CII::Writer.new.write(invoice)
 
-validator = Zugpferd::Validation::SchematronValidator.new(
+validator = FactureX::Validation::SchematronValidator.new(
   schemas_path: "vendor/schemas"
 )
 
@@ -96,9 +96,9 @@ The error ID (e.g. `BR-CO-25`, `BR-DE-2`) references a specific business rule in
 The schema validator checks structural XML correctness against the XSD schemas. This catches malformed elements, wrong namespaces, or missing required XML elements — but not business logic errors.
 
 ```ruby
-require "zugpferd/validation"
+require "facture_x/validation"
 
-validator = Zugpferd::Validation::SchemaValidator.new(
+validator = FactureX::Validation::SchemaValidator.new(
   schemas_path: "vendor/schemas"
 )
 
@@ -119,17 +119,17 @@ XSD validation does **not** require Java — it uses Nokogiri's built-in XML Sch
 ## Typical Workflow
 
 ```ruby
-require "zugpferd"
-require "zugpferd/validation"
+require "facture_x"
+require "facture_x/validation"
 
 # 1. Build the invoice
 invoice = build_invoice(params)
 
 # 2. Serialize to XML
-xml = Zugpferd::CII::Writer.new.write(invoice)
+xml = FactureX::CII::Writer.new.write(invoice)
 
 # 3. Validate (during development or for interactive input)
-validator = Zugpferd::Validation::SchematronValidator.new(
+validator = FactureX::Validation::SchematronValidator.new(
   schemas_path: "vendor/schemas"
 )
 errors = validator.validate_all(xml, rule_sets: [:cen_cii, :xrechnung_cii])
@@ -142,8 +142,8 @@ if fatals.any?
 end
 
 # 4. Embed into PDF (optional)
-require "zugpferd/pdf"
-Zugpferd::PDF::Embedder.new.embed(
+require "facture_x/pdf"
+FactureX::PDF::Embedder.new.embed(
   pdf_path: "input.pdf",
   xml: xml,
   output_path: "zugferd.pdf",

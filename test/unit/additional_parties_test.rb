@@ -6,14 +6,14 @@ class AdditionalPartiesTest < Minitest::Test
 
   def setup
     @inv = build_invoice
-    @inv.payee = Zugpferd::Model::TradeParty.new(
+    @inv.payee = FactureX::Model::TradeParty.new(
       name: "Factor SAS",
       identifier: "FACTOR-001",
     )
-    @inv.seller_tax_representative = Zugpferd::Model::TradeParty.new(
+    @inv.seller_tax_representative = FactureX::Model::TradeParty.new(
       name: "Rep Fiscal SARL",
       vat_identifier: "FR55555555555",
-      postal_address: Zugpferd::Model::PostalAddress.new(
+      postal_address: FactureX::Model::PostalAddress.new(
         country_code: "FR", city_name: "Marseille",
       ),
     )

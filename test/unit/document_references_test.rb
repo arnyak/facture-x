@@ -11,10 +11,10 @@ class DocumentReferencesTest < Minitest::Test
       project_reference: "PROJ-A",
       sales_order_reference: "SO-2024-001",
     )
-    @inv.preceding_invoice_references << Zugpferd::Model::DocumentReference.new(
+    @inv.preceding_invoice_references << FactureX::Model::DocumentReference.new(
       id: "INV-2023-100", issue_date: Date.new(2023, 12, 1),
     )
-    @inv.additional_documents << Zugpferd::Model::DocumentReference.new(
+    @inv.additional_documents << FactureX::Model::DocumentReference.new(
       id: "DOC-001", description: "Timesheet", uri: "https://example.com/ts.pdf",
     )
   end

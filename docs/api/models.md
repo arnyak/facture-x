@@ -4,7 +4,7 @@ outline: deep
 
 # Data Model
 
-All model classes live under `Zugpferd::Model` and map to EN 16931 Business Groups (BGs) and Business Terms (BTs) as used by XRechnung and ZUGFeRD. Monetary values are `BigDecimal`, dates are `Date` objects.
+All model classes live under `FactureX::Model` and map to EN 16931 Business Groups (BGs) and Business Terms (BTs) as used by XRechnung and ZUGFeRD. Monetary values are `BigDecimal`, dates are `Date` objects.
 
 ## BillingDocument Module
 
@@ -24,7 +24,7 @@ All document types include the `BillingDocument` module which provides the share
 Commercial Invoice, type code 380.
 
 ```ruby
-invoice = Zugpferd::Model::Invoice.new(
+invoice = FactureX::Model::Invoice.new(
   number: "INV-001",       # BT-1 (required)
   issue_date: Date.today,  # BT-2 (required)
   currency_code: "EUR"     # BT-5 (default: "EUR")
@@ -53,11 +53,11 @@ invoice = Zugpferd::Model::Invoice.new(
 ### Other Document Types
 
 ```ruby
-credit_note = Zugpferd::Model::CreditNote.new(number: "CN-001", issue_date: Date.today)
-corrected   = Zugpferd::Model::CorrectedInvoice.new(number: "C-001", issue_date: Date.today)
-self_billed = Zugpferd::Model::SelfBilledInvoice.new(number: "SB-001", issue_date: Date.today)
-partial     = Zugpferd::Model::PartialInvoice.new(number: "P-001", issue_date: Date.today)
-prepayment  = Zugpferd::Model::PrepaymentInvoice.new(number: "PP-001", issue_date: Date.today)
+credit_note = FactureX::Model::CreditNote.new(number: "CN-001", issue_date: Date.today)
+corrected   = FactureX::Model::CorrectedInvoice.new(number: "C-001", issue_date: Date.today)
+self_billed = FactureX::Model::SelfBilledInvoice.new(number: "SB-001", issue_date: Date.today)
+partial     = FactureX::Model::PartialInvoice.new(number: "P-001", issue_date: Date.today)
+prepayment  = FactureX::Model::PrepaymentInvoice.new(number: "PP-001", issue_date: Date.today)
 ```
 
 All document types share the same attributes (see table above). When using UBL, `CreditNote` produces a `<CreditNote>` root element with its own namespace. All other types use the standard `<Invoice>` element. In CII, the structure is identical for all type codes.
@@ -67,7 +67,7 @@ All document types share the same attributes (see table above). When using UBL, 
 Seller or buyer party.
 
 ```ruby
-party = Zugpferd::Model::TradeParty.new(name: "Company GmbH")
+party = FactureX::Model::TradeParty.new(name: "Company GmbH")
 ```
 
 | Attribute | BT | Type | Description |
@@ -86,7 +86,7 @@ party = Zugpferd::Model::TradeParty.new(name: "Company GmbH")
 ## PostalAddress (BG-5 / BG-8)
 
 ```ruby
-addr = Zugpferd::Model::PostalAddress.new(country_code: "DE")
+addr = FactureX::Model::PostalAddress.new(country_code: "DE")
 ```
 
 | Attribute | BT | Type | Description |
@@ -99,7 +99,7 @@ addr = Zugpferd::Model::PostalAddress.new(country_code: "DE")
 ## Contact (BG-6 / BG-9)
 
 ```ruby
-contact = Zugpferd::Model::Contact.new
+contact = FactureX::Model::Contact.new
 contact.name = "Max Mustermann"
 contact.telephone = "+49 30 12345"
 contact.email = "max@example.com"
@@ -114,7 +114,7 @@ contact.email = "max@example.com"
 ## LineItem (BG-25)
 
 ```ruby
-line = Zugpferd::Model::LineItem.new(
+line = FactureX::Model::LineItem.new(
   id: "1",
   invoiced_quantity: "10",
   unit_code: "C62",
@@ -135,7 +135,7 @@ line = Zugpferd::Model::LineItem.new(
 ## Item (BG-31)
 
 ```ruby
-item = Zugpferd::Model::Item.new(name: "Widget")
+item = FactureX::Model::Item.new(name: "Widget")
 item.tax_category = "S"
 item.tax_percent = BigDecimal("19")
 ```
@@ -151,7 +151,7 @@ item.tax_percent = BigDecimal("19")
 ## Price (BG-29)
 
 ```ruby
-price = Zugpferd::Model::Price.new(amount: "100.00")
+price = FactureX::Model::Price.new(amount: "100.00")
 ```
 
 | Attribute | BT | Type | Description |
@@ -161,7 +161,7 @@ price = Zugpferd::Model::Price.new(amount: "100.00")
 ## MonetaryTotals (BG-22)
 
 ```ruby
-totals = Zugpferd::Model::MonetaryTotals.new(
+totals = FactureX::Model::MonetaryTotals.new(
   line_extension_amount: "1000.00",
   tax_exclusive_amount: "1000.00",
   tax_inclusive_amount: "1190.00",
@@ -183,11 +183,11 @@ totals = Zugpferd::Model::MonetaryTotals.new(
 ## TaxBreakdown (BG-23)
 
 ```ruby
-breakdown = Zugpferd::Model::TaxBreakdown.new(
+breakdown = FactureX::Model::TaxBreakdown.new(
   tax_amount: "190.00",
   currency_code: "EUR"
 )
-breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(...)
+breakdown.subtotals << FactureX::Model::TaxSubtotal.new(...)
 ```
 
 | Attribute | BT | Type | Description |
@@ -199,7 +199,7 @@ breakdown.subtotals << Zugpferd::Model::TaxSubtotal.new(...)
 ## TaxSubtotal
 
 ```ruby
-sub = Zugpferd::Model::TaxSubtotal.new(
+sub = FactureX::Model::TaxSubtotal.new(
   taxable_amount: "1000.00",
   tax_amount: "190.00",
   category_code: "S",
@@ -221,7 +221,7 @@ sub = Zugpferd::Model::TaxSubtotal.new(
 ## PaymentInstructions (BG-16)
 
 ```ruby
-payment = Zugpferd::Model::PaymentInstructions.new(
+payment = FactureX::Model::PaymentInstructions.new(
   payment_means_code: "58"
 )
 payment.account_id = "DE89370400440532013000"
@@ -243,7 +243,7 @@ payment.account_id = "DE89370400440532013000"
 ## AllowanceCharge (BG-20 / BG-21)
 
 ```ruby
-charge = Zugpferd::Model::AllowanceCharge.new(
+charge = FactureX::Model::AllowanceCharge.new(
   charge_indicator: true,
   amount: "50.00"
 )

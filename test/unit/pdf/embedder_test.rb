@@ -1,10 +1,10 @@
 require "test_helper"
-require "zugpferd/pdf"
+require "facture_x/pdf"
 require "tempfile"
 
 class EmbedderTest < Minitest::Test
   def setup
-    @embedder = Zugpferd::PDF::Embedder.new
+    @embedder = FactureX::PDF::Embedder.new
   end
 
   def test_raises_on_missing_input_pdf
@@ -54,16 +54,16 @@ class EmbedderTest < Minitest::Test
 
   def test_valid_conformance_levels_for_2p1
     expected = ["MINIMUM", "BASIC WL", "BASIC", "EN 16931", "EXTENDED", "XRECHNUNG"]
-    assert_equal expected, Zugpferd::PDF::Embedder::CONFORMANCE_LEVELS["2p1"]
+    assert_equal expected, FactureX::PDF::Embedder::CONFORMANCE_LEVELS["2p1"]
   end
 
   def test_valid_conformance_levels_for_1p0
     expected = ["BASIC", "COMFORT", "EXTENDED"]
-    assert_equal expected, Zugpferd::PDF::Embedder::CONFORMANCE_LEVELS["1p0"]
+    assert_equal expected, FactureX::PDF::Embedder::CONFORMANCE_LEVELS["1p0"]
   end
 
   def test_versions_constant
-    assert_equal %w[rc 1p0 2p0 2p1], Zugpferd::PDF::Embedder::VERSIONS
+    assert_equal %w[rc 1p0 2p0 2p1], FactureX::PDF::Embedder::VERSIONS
   end
 
   def test_rc_version_accepts_any_conformance_level

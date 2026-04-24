@@ -12,7 +12,7 @@ head:
       content: '630'
 
 hero:
-  name: "Zugpferd"
+  name: "FactureX"
   text: "XRechnung & ZUGFeRD for Ruby"
   tagline: Read, write and convert e-invoices (e-Rechnung) in UBL 2.1 and UN/CEFACT CII according to EN 16931
   actions:

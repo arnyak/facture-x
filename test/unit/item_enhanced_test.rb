@@ -112,7 +112,7 @@ class ItemEnhancedTest < Minitest::Test
   # --- Defaults ---
 
   def test_defaults
-    item = Zugpferd::Model::Item.new(name: "Test")
+    item = FactureX::Model::Item.new(name: "Test")
     assert_nil item.buyers_identifier
     assert_nil item.standard_identifier
     assert_nil item.country_of_origin

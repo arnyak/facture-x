@@ -6,7 +6,7 @@ class PaymentInstructionsEnhancedTest < Minitest::Test
 
   def setup
     @inv = build_invoice
-    @inv.payment_instructions = Zugpferd::Model::PaymentInstructions.new(
+    @inv.payment_instructions = FactureX::Model::PaymentInstructions.new(
       payment_means_code: "30",
       account_id: "FR7630006000011234567890189",
       account_name: "Vendeur SARL",
@@ -66,7 +66,7 @@ class PaymentInstructionsEnhancedTest < Minitest::Test
   # --- Omission ---
 
   def test_cii_omits_bic_when_nil
-    @inv.payment_instructions = Zugpferd::Model::PaymentInstructions.new(
+    @inv.payment_instructions = FactureX::Model::PaymentInstructions.new(
       payment_means_code: "30", account_id: "DE89370400440532013000",
     )
     xml, = cii_roundtrip(@inv)

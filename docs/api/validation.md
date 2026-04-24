@@ -4,16 +4,16 @@ outline: deep
 
 # Validation
 
-Validate XML invoices against XSD schemas and Schematron business rules. Loaded via `require "zugpferd/validation"` (not included by default).
+Validate XML invoices against XSD schemas and Schematron business rules. Loaded via `require "facture_x/validation"` (not included by default).
 
 ## SchematronValidator
 
 Validates XML against EN 16931 and XRechnung business rules using Saxon HE. Requires Java and the Saxon JARs from `bin/setup-schemas`.
 
 ```ruby
-require "zugpferd/validation"
+require "facture_x/validation"
 
-validator = Zugpferd::Validation::SchematronValidator.new(
+validator = FactureX::Validation::SchematronValidator.new(
   schemas_path: "vendor/schemas"
 )
 ```
@@ -73,9 +73,9 @@ Validates XML against multiple rule sets and merges the results.
 Validates XML against XSD schemas using Nokogiri. Does **not** require Java.
 
 ```ruby
-require "zugpferd/validation"
+require "facture_x/validation"
 
-validator = Zugpferd::Validation::SchemaValidator.new(
+validator = FactureX::Validation::SchemaValidator.new(
   schemas_path: "vendor/schemas"
 )
 ```
@@ -105,7 +105,7 @@ Validates XML against an XSD schema.
 
 | Validator | Requires | Installed via |
 |-----------|----------|---------------|
-| `SchemaValidator` | Nokogiri (bundled) | `gem install zugpferd` |
+| `SchemaValidator` | Nokogiri (bundled) | `gem install facture_x` |
 | `SchematronValidator` | Java + Saxon HE 12.5 | `bin/setup-schemas` |
 
 Both validators need the schema files from `vendor/schemas/`, downloaded via `bin/setup-schemas`.

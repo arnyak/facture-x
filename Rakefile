@@ -29,11 +29,11 @@ end
 
 desc "Validate a single XML file (FILE=path.xml)"
 task :validate do
-  require "zugpferd"
-  require "zugpferd/validation"
+  require "facture_x"
+  require "facture_x/validation"
   file = ENV.fetch("FILE")
   xml = File.read(file)
-  errors = Zugpferd::Validation::SchematronValidator.new(
+  errors = FactureX::Validation::SchematronValidator.new(
     schemas_path: "vendor/schemas"
   ).validate(xml, rule_set: :cen_ubl)
 

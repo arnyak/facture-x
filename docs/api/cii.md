@@ -9,7 +9,7 @@ Read and write documents in UN/CEFACT Cross-Industry Invoice (CII) format, as us
 ## Reader
 
 ```ruby
-reader = Zugpferd::CII::Reader.new
+reader = FactureX::CII::Reader.new
 invoice = reader.read(xml_string)
 ```
 
@@ -20,14 +20,14 @@ Parses a CII D16B XML string and returns the appropriate model class based on th
 **Parameters:**
 - `xml_string` (`String`) — Valid CII CrossIndustryInvoice XML
 
-**Returns:** `Zugpferd::Model::Invoice`, `Zugpferd::Model::CreditNote`, or other `BillingDocument` subtype
+**Returns:** `FactureX::Model::Invoice`, `FactureX::Model::CreditNote`, or other `BillingDocument` subtype
 
 **Raises:** `Nokogiri::XML::SyntaxError` if the XML is malformed
 
 ## Writer
 
 ```ruby
-writer = Zugpferd::CII::Writer.new
+writer = FactureX::CII::Writer.new
 xml_string = writer.write(invoice)
 ```
 
@@ -36,7 +36,7 @@ xml_string = writer.write(invoice)
 Serializes a billing document to a CII CrossIndustryInvoice XML string.
 
 **Parameters:**
-- `invoice` (`Zugpferd::Model::BillingDocument`) — The document to serialize
+- `invoice` (`FactureX::Model::BillingDocument`) — The document to serialize
 
 **Returns:** `String` — UTF-8 encoded XML
 

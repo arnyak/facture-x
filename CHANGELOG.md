@@ -59,18 +59,18 @@
 
 ### Fixed
 
-- Missing `require "zugpferd/validation"` in Rakefile `validate` task
+- Missing `require "facture_x/validation"` in Rakefile `validate` task
 
 ## [0.3.0] - 2026-02-15
 
 ### Added
 
-- PDF/A-3 embedding via Ghostscript (`Zugpferd::PDF::Embedder`) — create ZUGFeRD / Factur-X hybrid invoices
+- PDF/A-3 embedding via Ghostscript (`FactureX::PDF::Embedder`) — create ZUGFeRD / Factur-X hybrid invoices
 - Support for ZUGFeRD versions 1.0, 2.0 and 2.1 with all conformance levels
-- XSD and Schematron validation included in gem (`require "zugpferd/validation"`) — optional, requires Java + Saxon
+- XSD and Schematron validation included in gem (`require "facture_x/validation"`) — optional, requires Java + Saxon
 - Actual delivery date (BT-72) support in data model, UBL and CII readers/writers
-- veraPDF validation wrapper (`Zugpferd::Validation::PdfValidator`) for PDF/A-3 compliance checks
-- Mustangproject validation wrapper (`Zugpferd::Validation::MustangValidator`) for full ZUGFeRD validation
+- veraPDF validation wrapper (`FactureX::Validation::PdfValidator`) for PDF/A-3 compliance checks
+- Mustangproject validation wrapper (`FactureX::Validation::MustangValidator`) for full ZUGFeRD validation
 - Docker setup for veraPDF (REST API) and Mustangproject (CLI)
 - `bin/setup-schemas` downloads Saxon HE, XSD schemas, CEN/XRechnung Schematron, `zugferd.ps` and `default_rgb.icc`
 
