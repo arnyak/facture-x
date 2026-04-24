@@ -1,8 +1,8 @@
 # Zugpferd
 
-A Ruby library for reading and writing **XRechnung** and **ZUGFeRD** electronic invoices (e-Rechnung) according to **EN 16931**, supporting both **UBL 2.1** and **UN/CEFACT CII** syntaxes.
+A Ruby library for reading and writing **XRechnung**, **ZUGFeRD** and **Factur-X** electronic invoices according to **EN 16931**, supporting both **UBL 2.1** and **UN/CEFACT CII** syntaxes.
 
-Built for Ruby developers integrating XRechnung or ZUGFeRD e-invoicing into their applications.
+Built for Ruby developers integrating e-invoicing into their applications, with full support for the French electronic invoicing reform (réforme de la facturation électronique).
 
 ## Features
 
@@ -18,6 +18,17 @@ Built for Ruby developers integrating XRechnung or ZUGFeRD e-invoicing into thei
   - `389` — Self-billed Invoice
   - `326` — Partial Invoice
   - `386` — Prepayment Invoice
+- French e-invoicing reform ready:
+  - SIREN/SIRET support via identifier scheme IDs (BT-29-1, BT-30-1)
+  - Invoicing period (BG-14 / BG-26)
+  - Preceding invoice references (BG-3) and additional documents (BG-24)
+  - Document references: purchase order (BT-13), contract (BT-12), project (BT-11), sales order (BT-14)
+  - Payee party (BG-10) and seller tax representative (BG-11)
+  - Deliver-to address (BG-15)
+  - Line-level allowances/charges (BG-27 / BG-28)
+  - Item identifiers: buyer's ID (BT-156), GTIN (BT-157), classification (BT-158), country of origin (BT-159)
+  - Payment BIC/SWIFT (BT-86) and account name (BT-85)
+  - Tax currency code (BT-6) with BT-111 accounting currency support
 - No Rails dependency
 - BigDecimal for all monetary amounts
 
@@ -156,16 +167,18 @@ The model maps to the Business Groups of EN 16931:
 | `Model::SelfBilledInvoice` | BG-0 | Self-billed Invoice (389) |
 | `Model::PartialInvoice` | BG-0 | Partial Invoice (326) |
 | `Model::PrepaymentInvoice` | BG-0 | Prepayment Invoice (386) |
-| `Model::TradeParty` | BG-4 / BG-7 | Seller / Buyer |
-| `Model::PostalAddress` | BG-5 / BG-8 | Postal address |
+| `Model::TradeParty` | BG-4 / BG-7 / BG-10 / BG-11 | Seller / Buyer / Payee / Tax representative |
+| `Model::PostalAddress` | BG-5 / BG-8 / BG-15 | Postal address (incl. deliver-to) |
 | `Model::Contact` | BG-6 / BG-9 | Contact information |
-| `Model::LineItem` | BG-25 | Invoice line |
-| `Model::Item` | BG-31 | Item information |
+| `Model::InvoicePeriod` | BG-14 / BG-26 | Invoicing period (document and line level) |
+| `Model::DocumentReference` | BG-3 / BG-24 | Preceding invoice reference / Additional documents |
+| `Model::LineItem` | BG-25 | Invoice line (with line-level allowances/charges) |
+| `Model::Item` | BG-31 | Item information (GTIN, classification, origin) |
 | `Model::Price` | BG-29 | Price details |
 | `Model::MonetaryTotals` | BG-22 | Document totals |
-| `Model::TaxBreakdown` | BG-23 | VAT breakdown |
-| `Model::PaymentInstructions` | BG-16 | Payment information |
-| `Model::AllowanceCharge` | BG-20 / BG-21 | Allowances and charges |
+| `Model::TaxBreakdown` | BG-23 | VAT breakdown (incl. BT-111 accounting currency) |
+| `Model::PaymentInstructions` | BG-16 | Payment information (IBAN, BIC, card, direct debit) |
+| `Model::AllowanceCharge` | BG-20 / BG-21 / BG-27 / BG-28 | Document and line-level allowances and charges |
 
 ## Requirements
 

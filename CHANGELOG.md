@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-24
+
+### Added
+
+- **Invoice period** (BG-14 / BG-26): new `Model::InvoicePeriod` class with `start_date` and `end_date`, supported at both document and line level
+- **Document references** (BG-3, BT-11 to BT-14, BG-24): new `Model::DocumentReference` class for preceding invoice references, additional supporting documents (with attachment/URI support), purchase order reference, contract reference, project reference, and sales order reference
+- **Payee party** (BG-10): `payee` field on billing documents, reuses `TradeParty`
+- **Seller tax representative** (BG-11): `seller_tax_representative` field on billing documents, reuses `TradeParty`
+- **Deliver-to information** (BG-13 / BG-15): `deliver_to_name`, `deliver_to_identifier`, `deliver_to_address` fields for ship-to party and address
+- **Enhanced postal address**: `additional_street_name` (BT-36), `address_line_3` (BT-162), `country_subdivision` (BT-39)
+- **Payment account name** (BT-85) and **BIC/SWIFT** (BT-86): `account_name` and `payment_service_provider_id` on `PaymentInstructions`
+- **Line-level allowances and charges** (BG-27 / BG-28): `allowance_charges` array on `LineItem`
+- **Line object identifier** (BT-128): `object_identifier` and `object_identifier_scheme` on `LineItem`
+- **Line order reference** (BT-132): `order_line_reference` on `LineItem`
+- **Item buyer's identifier** (BT-156): `buyers_identifier` on `Item`
+- **Standard item identification** (BT-157): `standard_identifier` and `standard_identifier_scheme` on `Item` (e.g., GTIN/EAN)
+- **Item classification codes** (BT-158): read/write support for `classification_codes` (already existed in model)
+- **Item country of origin** (BT-159): `country_of_origin` on `Item`
+- **Identifier scheme IDs** (BT-29-1, BT-30-1): `identifier_scheme` and `legal_registration_id_scheme` on `TradeParty`
+- **Tax currency code** (BT-6): `tax_currency_code` on billing documents
+- **Tax amount in accounting currency** (BT-111): `tax_amount_in_accounting_currency` on `TaxBreakdown`, with proper second TaxTotal generation in UBL and CII
+- **Buyer accounting reference** (BT-19): `buyer_accounting_reference` on billing documents
+
+### Fixed
+
+- UBL reader no longer reads SEPA creditor reference (`schemeID="SEPA"`) as the party identifier, preventing duplicate `PartyIdentification` elements on roundtrip (UBL-SR-29)
+
 ## [0.3.4] - 2026-02-19
 
 ### Fixed
